@@ -16,10 +16,21 @@ def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
         wheels[i].setPosition(float('inf'))
         wheels[i].setVelocity(speeds[i])
         
-def move_forward()
-def move_backward()
-def turn_left()
-def turn_right()
+def move_forward(speed, wheels = []):
+    speeds = [speed*4, speed*4, speed*4, speed*4]
+    base_set_wheel_speed_helper(speeds, wheels)
+    
+def move_backward(speed, wheels = []):
+    speeds = [-speed*4, -speed*4, -speed*4, -speed*4]
+    base_set_wheel_speed_helper(speeds, wheels)
+    
+def turn_left(speed, wheels = []):
+    speeds = [speed*4, 2, speed*4, 2]
+    base_set_wheel_speed_helper(speeds, wheels)
+
+def turn_right(speed, wheels = []):
+    speeds = [2, speed*4, 2, speed*4]
+    base_set_wheel_speed_helper(speeds, wheels)
 
 
 
@@ -162,8 +173,6 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
-        speeds = [10, 10, 10, 10]
-        base_set_wheel_speed_helper(speeds, wheels)
         
         
          
