@@ -10,6 +10,18 @@ from youbot_zombie import *
     
     
 
+def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
+    for i in range(0, 4):
+    
+        wheels[i].setPosition(float('inf'))
+        wheels[i].setVelocity(speeds[i])
+        
+def move_forward()
+def move_backward()
+def turn_left()
+def turn_right()
+
+
 
 #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
 
@@ -88,10 +100,12 @@ def main():
     br = robot.getDevice("wheel3")
     bl = robot.getDevice("wheel4")
     
-    fr.setPosition(float('inf'))
-    fl.setPosition(float('inf'))
-    br.setPosition(float('inf'))
-    bl.setPosition(float('inf'))
+    wheels = [fr, fl, br, bl]
+    
+    # fr.setPosition(float('inf'))
+    # fl.setPosition(float('inf'))
+    # br.setPosition(float('inf'))
+    # bl.setPosition(float('inf'))
     
     
     i=0
@@ -147,6 +161,11 @@ def main():
         #i+=1
         
         #make decisions using inputs if you choose to do so
+        
+        speeds = [10, 10, 10, 10]
+        base_set_wheel_speed_helper(speeds, wheels)
+        
+        
          
         #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
         
