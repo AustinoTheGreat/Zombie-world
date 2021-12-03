@@ -136,7 +136,7 @@ DEF Youbot Youbot {
   ]
 }
 DEF Berry0 Solid {
-  translation 7.96007 0.0516629 3.2099
+  translation 6.22339 0.0516629 0.624182
   rotation -0.4472135954998153 2.4166820336214355e-12 -0.8944271909999872 0.0010477170011384145
   children [
     Shape {
@@ -151,6 +151,28 @@ DEF Berry0 Solid {
     }
   ]
   name "solid(8)"
+  boundingObject DEF BOX Box {
+    size 0.1 0.1 0.1
+  }
+  physics Physics {
+  }
+}
+DEF Berry0 Solid {
+  translation 7.96007 0.0516629 3.2099
+  rotation -0.4472135954998153 2.4166820336214355e-12 -0.8944271909999872 0.0010477170011384145
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.2 0.1
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  name "solid(2)"
   boundingObject DEF BOX Box {
     size 0.1 0.1 0.1
   }
