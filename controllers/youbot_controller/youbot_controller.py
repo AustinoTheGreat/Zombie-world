@@ -110,26 +110,26 @@ def main():
     camera1 = robot.getDevice("ForwardLowResBigFov")
     camera1.enable(timestep)
     
-    camera2 = robot.getDevice("ForwardHighResSmallFov")
-    camera2.enable(timestep)
+    # camera2 = robot.getDevice("ForwardHighResSmallFov")
+    # camera2.enable(timestep)
     
-    camera3 = robot.getDevice("ForwardHighRes")
-    camera3.enable(timestep)
+    # camera3 = robot.getDevice("ForwardHighRes")
+    # camera3.enable(timestep)
     
-    camera4 = robot.getDevice("ForwardHighResSmall")
-    camera4.enable(timestep)
+    # camera4 = robot.getDevice("ForwardHighResSmall")
+    # camera4.enable(timestep)
     
     camera5 = robot.getDevice("BackLowRes")
     camera5.enable(timestep)
     
-    camera6 = robot.getDevice("RightLowRes")
-    camera6.enable(timestep)
+    # camera6 = robot.getDevice("RightLowRes")
+    # camera6.enable(timestep)
     
-    camera7 = robot.getDevice("LeftLowRes")
-    camera7.enable(timestep)
+    # camera7 = robot.getDevice("LeftLowRes")
+    # camera7.enable(timestep)
     
-    camera8 = robot.getDevice("BackHighRes")
-    camera8.enable(timestep)
+    # camera8 = robot.getDevice("BackHighRes")
+    # camera8.enable(timestep)
     
     gyro = robot.getDevice("gyro")
     gyro.enable(timestep)
@@ -213,6 +213,7 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
+        # Color Ranges, red and blue done
         red_lower_range = [50, 150, 0]
         red_higher_range = [200, 230, 255]
         
@@ -225,14 +226,15 @@ def main():
         pink_lower_range = [50, 150, 0]
         pink_higher_range = [200, 230, 255]
     
-        blue_lower_range = [50, 150, 0]
-        blue_higher_range = [200, 230, 255]
+        # 10, 39, 94 fpr shadows
+        blue_lower_range = [3, 33, 88]
+        blue_higher_range = [39, 145, 235]
  
         green_lower_range = [50, 150, 0]
         green_higher_range = [200, 230, 255]
         
-        purple_lower_range = [50, 150, 0]
-        purple_higher_range = [200, 230, 255]
+        purple_lower_range = [43, 10, 94]
+        purple_higher_range = [112, 60, 181]
         
         aqua_lower_range = [50, 150, 0]
         aqua_higher_range = [200, 230, 255]
@@ -241,9 +243,10 @@ def main():
         front_img = get_image_from_camera(camera1)
         front_img = cv2.cvtColor(front_img, cv2.COLOR_RGB2HSV)
         
-        berries = get_img_obj(front_img, red_lower_range, red_higher_range)
+        berries = get_img_obj(front_img, purple_lower_range, purple_higher_range)
         for item in berries:
             print(item.x, item.y)
+        print("end")
         
         
         # Speed can be set from 0 to 10
