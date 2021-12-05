@@ -11,8 +11,14 @@ class Object_Id:
     AQUA_ZOMBIE = 8
     PURPLE_ZOMBIE = 9
     ZOMBIE_UNIDENTIFIED = 10
-    STUMP = 11
-    TREE = 12
+    TREE = 11
+    
+class Object_Id:
+    """Enum of the berry behaviors"""
+    plus_forty_energy = 1
+    plus_twenty_health = 2
+    minus_twenty_health = 3
+    armor = 4
     
     
 class Point:
@@ -27,7 +33,27 @@ class World_Object:
     """An world object struct"""
     
     object_id = Object_Id.UNIDENTIFIED
+    on_stump = False
     
     def __init__(self, loc):
         self.location = loc
+        
+        
+class Berry_Array:
+    """An object holding all the berry locations"""
+    yellow_berry_arr = []
+    red_berry_arr = []
+    orange_berry_arr = []
+    pink_berry_arr = []
+    
+    def __init__(self):
+        
+        self.yellow_effects = []
+        self.blue_effects = []
+        self.orange_effects = []
+        self.pink_effects = []
+        
+        
+    def berry_eaten(self, berry_type, ):
+        
     
