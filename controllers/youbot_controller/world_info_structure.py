@@ -55,5 +55,49 @@ class Berry_Array:
         
         
     def berry_eaten(self, berry_type, ):
-        
+        pass
+
+
+class Lidar_info:
     
+    def __init__(self, lidar_obj):
+        self.lidar_obj = lidar_obj
+        self.items_front = []
+        self.items_back = []
+        self.items_left = []
+        self.items_right = []
+        lidar_obj.enablePointCloud()
+
+    def recalculate(self):
+        range_image = self.lidar_obj.getRangeImage()
+        self.items_front = range_image[0:128]
+        self.items_back = range_image[128:256]
+        self.items_left = range_image[256:384]
+        self.items_right = range_image[384:512]
+        
+
+    def identify_items_front(self):
+        front_objects = [] #dictionary with angle and distance of each item detected
+        
+        idx = 0
+        ANGLE_STEP = 0.703125 #constant corresponding to angle difference between each lidar laser 
+        for item_distance in self.items_front:
+            a = {"angle": idx *ANGLE_STEP, "distance" : item_distance}
+            front_objects.append(a)
+        
+        return front_objects
+
+
+
+
+
+    # def test_outputs(self):
+    #     print("FRONT ITEMS")
+    #     print_item_array_info(self.items_front)
+    #     print("BACK ITEMS")
+    #     print_item_array_info(self.items_back)
+    #     print("LEFT ITEMS")
+    #     print_item_array_info(self.items_left)
+    #     print("RIGHT ITEMS")
+    #     print_item_array_info(self.items_right)
+        

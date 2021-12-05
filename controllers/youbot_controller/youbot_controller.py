@@ -4,6 +4,8 @@ from controller import Robot, Motor, Camera, Accelerometer, GPS, Gyro, LightSens
 from controller import Supervisor
 
 from youbot_zombie import *
+#TODO: REMOVE BEFORE SUMBITTING, COPY ALL CODE INTO THIS FILE!!!!
+from world_info_structure import * 
    
 #------------------CHANGE CODE BELOW HERE ONLY--------------------------
 #define functions here for making decisions and using sensor inputs
@@ -58,53 +60,56 @@ def main():
     #------------------CHANGE CODE BELOW HERE ONLY--------------------------
     
     #COMMENT OUT ALL SENSORS THAT ARE NOT USED. READ SPEC SHEET FOR MORE DETAILS
-    accelerometer = robot.getDevice("accelerometer")
-    accelerometer.enable(timestep)
+
+    # accelerometer = robot.getDevice("accelerometer")
+    # accelerometer.enable(timestep)
     
     gps = robot.getDevice("gps")
     gps.enable(timestep)
     
-    compass = robot.getDevice("compass")
-    compass.enable(timestep)
+    # compass = robot.getDevice("compass")
+    # compass.enable(timestep)
     
-    camera1 = robot.getDevice("ForwardLowResBigFov")
-    camera1.enable(timestep)
+    # camera1 = robot.getDevice("ForwardLowResBigFov")
+    # camera1.enable(timestep)
     
-    camera2 = robot.getDevice("ForwardHighResSmallFov")
-    camera2.enable(timestep)
+    # camera2 = robot.getDevice("ForwardHighResSmallFov")
+    # camera2.enable(timestep)
     
-    camera3 = robot.getDevice("ForwardHighRes")
-    camera3.enable(timestep)
+    # camera3 = robot.getDevice("ForwardHighRes")
+    # camera3.enable(timestep)
     
-    camera4 = robot.getDevice("ForwardHighResSmall")
-    camera4.enable(timestep)
+    # camera4 = robot.getDevice("ForwardHighResSmall")
+    # camera4.enable(timestep)
     
-    camera5 = robot.getDevice("BackLowRes")
-    camera5.enable(timestep)
+    # camera5 = robot.getDevice("BackLowRes")
+    # camera5.enable(timestep)
     
-    camera6 = robot.getDevice("RightLowRes")
-    camera6.enable(timestep)
+    # camera6 = robot.getDevice("RightLowRes")
+    # camera6.enable(timestep)
     
-    camera7 = robot.getDevice("LeftLowRes")
-    camera7.enable(timestep)
+    # camera7 = robot.getDevice("LeftLowRes")
+    # camera7.enable(timestep)
     
     camera8 = robot.getDevice("BackHighRes")
     camera8.enable(timestep)
     
-    gyro = robot.getDevice("gyro")
-    gyro.enable(timestep)
+    # gyro = robot.getDevice("gyro")
+    # gyro.enable(timestep)
     
-    lightSensor = robot.getDevice("light sensor")
-    lightSensor.enable(timestep)
+    # lightSensor = robot.getDevice("light sensor")
+    # lightSensor.enable(timestep)
     
-    receiver = robot.getDevice("receiver")
-    receiver.enable(timestep)
+    # receiver = robot.getDevice("receiver")
+    # receiver.enable(timestep)
     
-    rangeFinder = robot.getDevice("range-finder")
-    rangeFinder.enable(timestep)
+    # rangeFinder = robot.getDevice("range-finder")
+    # rangeFinder.enable(timestep)
     
-    lidar = robot.getDevice("lidar")
-    lidar.enable(timestep)
+    lidar_sens = robot.getDevice("lidar")
+    lidar_sens.enable(timestep)
+
+    lidar = LidarInfo(lidar)_
     
     fr = robot.getDevice("wheel1")
     fl = robot.getDevice("wheel2")
@@ -118,6 +123,20 @@ def main():
     # br.setPosition(float('inf'))
     # bl.setPosition(float('inf'))
     
+    # TODO: MOVE THIS SOMEWHERE ELSE LOL
+    def print_item_array_info(arr):
+        idx = 0
+        ANGLE_STEP = 0.703125 #constant corresponding to angle difference between each lidar laser
+
+        # Print out items for objects in front 
+        for item_distance in arr:
+            degree = idx * ANGLE_STEP
+
+            conv_degree = "{:.2f}".format(degree)
+            conv_distance = "{:.2f}".format(r)
+            # if(r < 1):
+            print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
+        
     
     i=0
            
@@ -173,9 +192,22 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
+        lidar.recalculate()
+
+
+        print("FRONT ITEMS")
+        print_item_array_info(lidar.items_front)
+        print("BACK ITEMS")
+        print_item_array_info(lidar.items_back)
+        print("LEFT ITEMS")
+        print_item_array_info(lidar.items_left)
+        print("RIGHT ITEMS")
+        print_item_array_info(lidar.items_right)
         
         
-         
+
+
+
         #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
         
         
