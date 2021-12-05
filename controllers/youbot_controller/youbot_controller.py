@@ -17,8 +17,38 @@ class image_obj:
     def __init__(self, x, y): 
         self.x = x 
         self.y = y
+        self.color = 0
+        self.distance = 0
+        self.angle = 0
 
-SPEED_STEP = 1.48 
+SPEED_STEP = 1.48
+P_COEFFICIENT = 0.1
+
+
+# Color ranges for zombies and berries, HSV
+red_lower_range = [110, 150, 0]
+red_higher_range = [130, 230, 255]
+
+orange_lower_range = [100, 100, 0]
+orange_higher_range = [120, 150, 255]
+
+yellow_lower_range = [60, 150, 0]
+yellow_higher_range = [100, 230, 255]
+
+pink_lower_range = [130, 50, 0]
+pink_higher_range = [160, 255, 255]
+
+blue_lower_range = [0, 150, 0]
+blue_higher_range = [20, 230, 255]
+
+green_lower_range = [40, 150, 0]
+green_higher_range = [60, 230, 255]
+
+purple_lower_range = [160, 150, 0]
+purple_higher_range = [180, 230, 255]
+
+aqua_lower_range = [20, 150, 0]
+aqua_higher_range = [40, 230, 255]
 
 
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
@@ -26,21 +56,25 @@ def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
     
         wheels[i].setPosition(float('inf'))
         wheels[i].setVelocity(speeds[i])
-        
+
+# 0-10        
 def move_forward(speed, wheels = []):
     speeds = [speed*SPEED_STEP, speed*SPEED_STEP, speed*SPEED_STEP, speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
-    
+
+# 0-10  
 def move_backward(speed, wheels = []):
     speeds = [-speed*SPEED_STEP, -speed*SPEED_STEP, -speed*SPEED_STEP, -speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
-    
+
+# 0-4
 def turn_left(speed, wheels = []):
-    speeds = [speed*SPEED_STEP, SPEED_STEP, speed*SPEED_STEP, SPEED_STEP]
+    speeds = [speed*SPEED_STEP, -speed*SPEED_STEP, speed*SPEED_STEP, -speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
 
+# 0-4
 def turn_right(speed, wheels = []):
-    speeds = [SPEED_STEP, speed*SPEED_STEP, SPEED_STEP, speed*SPEED_STEP]
+    speeds = [-speed*SPEED_STEP, speed*SPEED_STEP, -speed*SPEED_STEP, speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
 
 def get_image_from_camera(camera):
@@ -74,31 +108,38 @@ def get_img_obj(img, lower_range, higher_range):
             center_y = int(center['m01'] / center['m00'])
             objs.append(image_obj(center_x, center_x))
     return objs   
+    
+def go_toward_seen_berry(camera5, wheels, speed):
+    
+    berries = front_berries(camera5)
+    print(berries)
+    
+    if (len(berries) != 0):
+        error = camera5.getWidth() / 2 - berries[0].x
+        speeds = [0, 0, 0, 0]
+        speeds[1] = -error * P_COEFFICIENT - speed * SPEED_STEP
+        speeds[3] = -error * P_COEFFICIENT - speed * SPEED_STEP
+        speeds[0] = error * P_COEFFICIENT - speed * SPEED_STEP
+        speeds[2] = error * P_COEFFICIENT - speed * SPEED_STEP
+        base_set_wheel_speed_helper(speeds, wheels)
+        return True
+    else:
+        return False
+    
      
-# Color ranges for zombies and berries, HSV
-red_lower_range = [110, 150, 0]
-red_higher_range = [130, 230, 255]
+def front_berries(camera):
+    img = get_image_from_camera(camera)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    
+    red = get_img_obj(img, red_lower_range, red_higher_range)
+    orange = get_img_obj(img, orange_lower_range, orange_higher_range)
+    pink = get_img_obj(img, pink_lower_range, pink_higher_range)
+    yellow = get_img_obj(img, yellow_lower_range, yellow_higher_range)
+    
+    berries = red + orange + pink + yellow
+    
+    return berries
 
-orange_lower_range = [100, 100, 0]
-orange_higher_range = [120, 150, 255]
-
-yellow_lower_range = [60, 150, 0]
-yellow_higher_range = [100, 230, 255]
-
-pink_lower_range = [130, 50, 0]
-pink_higher_range = [160, 255, 255]
-
-blue_lower_range = [0, 150, 0]
-blue_higher_range = [20, 230, 255]
-
-green_lower_range = [40, 150, 0]
-green_higher_range = [60, 230, 255]
-
-purple_lower_range = [160, 150, 0]
-purple_higher_range = [180, 230, 255]
-
-aqua_lower_range = [20, 150, 0]
-aqua_higher_range = [40, 230, 255]
 
 
 #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
@@ -266,8 +307,17 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
-        lidar.recalculate()
+        # lidar.recalculate()
+        if (go_toward_seen_berry(camera5, wheels, 4) == False):
+            move_backward(4, wheels)
+            
 
+        
+        # img = get_image_from_camera(camera5)
+        # img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+        # berries = get_img_obj(front_img, orange_lower_range, orange_higher_range)
+        
+        
 
         # print("FRONT ITEMS")
         # print_item_array_info(lidar.items_front)
