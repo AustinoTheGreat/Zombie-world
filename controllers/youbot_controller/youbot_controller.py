@@ -132,13 +132,21 @@ def main():
         for item_distance in arr:
             degree = idx * ANGLE_STEP
 
-            conv_degree = "{:.2f}".format(degree)
-            conv_distance = "{:.2f}".format(item_distance)
+            conv_degree = round(degree, 2)
+            conv_distance = round(item_distance, 2)
             # if(r < 1):
             print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
             idx+=1
         
-    
+    def sum_ignore_inf(arr):
+        sum = 0
+        positive_infinity = float('inf')
+        for i in arr:
+            if i != positive_infinity:
+                sum+=i
+        return sum
+
+
     i=0
            
 
@@ -196,14 +204,20 @@ def main():
         lidar.recalculate()
 
 
-        print("FRONT ITEMS")
-        print_item_array_info(lidar.items_front)
-        print("BACK ITEMS")
-        print_item_array_info(lidar.items_back)
-        print("LEFT ITEMS")
-        print_item_array_info(lidar.items_left)
-        print("RIGHT ITEMS")
-        print_item_array_info(lidar.items_right)
+        # print("FRONT ITEMS")
+        # print_item_array_info(lidar.items_front)
+        # print(sum_ignore_inf(lidar.items_right)/128)
+
+
+        # print_item_array_info(lidar.items_front[118:128])
+        # print(self.items_right[128])
+
+        # print("BACK ITEMS")
+        # print_item_array_info(lidar.items_back)
+        # print("LEFT ITEMS")
+        # print_item_array_info(lidar.items_left)
+        # print("RIGHT ITEMS")
+        # print_item_array_info(lidar.items_right)
         
         
 

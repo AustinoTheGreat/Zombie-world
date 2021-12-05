@@ -70,10 +70,12 @@ class Lidar_Info:
 
     def recalculate(self):
         range_image = self.lidar_obj.getRangeImage()
-        self.items_front = range_image[0:128]
-        self.items_back = range_image[128:256]
-        self.items_left = range_image[256:384]
-        self.items_right = range_image[384:512]
+        self.items_front = range_image[447:511] + range_image[0:63]
+        self.items_right= range_image[63:191]
+        self.items_back = range_image[191:319]
+        self.items_left = range_image[319:447]
+        # self.items_front.append()
+        
         
 
     def identify_items_front(self):
