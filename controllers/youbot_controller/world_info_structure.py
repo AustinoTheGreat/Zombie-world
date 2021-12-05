@@ -2,7 +2,7 @@ class Berry_Bot:
     """Class encapsulating robot characteristics"""
     def __init__(self, position, orientation):
         self.position = position
-        self.orientation = orientation #angle that robot is facing?
+        self.orientation = orientation #angle that robot is facing?  
 
 class Object_Id:
     """Enum of the object we are looking at"""

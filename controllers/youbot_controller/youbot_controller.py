@@ -9,11 +9,6 @@ from world_info_structure import *
    
 #------------------CHANGE CODE BELOW HERE ONLY--------------------------
 #define functions here for making decisions and using sensor inputs
-<<<<<<< HEAD
-    
-    
-MAX_SPEED = 14.8/4
-=======
 
 import cv2
 import numpy as np
@@ -25,7 +20,6 @@ class image_obj:
 
 SPEED_STEP = 1.48 
 
->>>>>>> b4154ba1943da98e8e08495ce55efdb4b29cd475
 
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
     for i in range(0, 4):
@@ -272,29 +266,27 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
-
-
-        # LIDAR CODE
         lidar.recalculate()
+
 
         # print("FRONT ITEMS")
         # print_item_array_info(lidar.items_front)
         # print(sum_ignore_inf(lidar.items_right)/128)
 
+
+        # print_item_array_info(lidar.items_front[118:128])
+        # print(self.items_right[128])
+
+        # print("BACK ITEMS")
+        # print_item_array_info(lidar.items_back)
+        # print("LEFT ITEMS")
+        # print_item_array_info(lidar.items_left)
+        # print("RIGHT ITEMS")
+        # print_item_array_info(lidar.items_right)
         
-        #  GPS TEST
-        gps_vals = gps.getValues()
-        # print("x: ", gps_vals[0] , "\n") # positive increase in direction of robot arm
-        # print("y: ", gps_vals[2] , "\n") # positive increatse to the right of arm
-        # # print("z: ", gps_vals[1] , "\n")
-        # print( "----------\n")
-
-        move_forward(MAX_SPEED, wheels)
         
-        turn_right(MAX_SPEED/2, wheels)
 
 
-        # Intialize robot
 
         #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
         
