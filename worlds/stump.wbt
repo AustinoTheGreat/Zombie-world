@@ -167,7 +167,7 @@ DEF Berry13 Solid {
   }
 }
 DEF BOX1 Solid {
-  translation 9.16 0.1 0.18
+  translation -0.93 0.1 0.18
   rotation -0.7774744030964151 0.09313982042610232 -0.6219795224771202 2.1933874080388928e-16
   scale 2 2 2
   children [
