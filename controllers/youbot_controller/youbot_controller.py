@@ -109,7 +109,7 @@ def main():
     lidar_sens = robot.getDevice("lidar")
     lidar_sens.enable(timestep)
 
-    lidar = LidarInfo(lidar)_
+    lidar = Lidar_Info(lidar_sens)
     
     fr = robot.getDevice("wheel1")
     fl = robot.getDevice("wheel2")
@@ -133,9 +133,10 @@ def main():
             degree = idx * ANGLE_STEP
 
             conv_degree = "{:.2f}".format(degree)
-            conv_distance = "{:.2f}".format(r)
+            conv_distance = "{:.2f}".format(item_distance)
             # if(r < 1):
             print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
+            idx+=1
         
     
     i=0

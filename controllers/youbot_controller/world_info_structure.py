@@ -29,14 +29,14 @@ class Point:
         self.y = y
     
 
-class World_Object:
-    """An world object struct"""
+# class World_Object:
+#     """An world object struct"""
     
-    object_id = Object_Id.UNIDENTIFIED
-    on_stump = False
+#     object_id = Object_Id.UNIDENTIFIED
+#     on_stump = False
     
-    def __init__(self, loc):
-        self.location = loc
+#     def __init__(self, loc):
+#         self.location = loc
         
         
 class Berry_Array:
@@ -58,7 +58,7 @@ class Berry_Array:
         pass
 
 
-class Lidar_info:
+class Lidar_Info:
     
     def __init__(self, lidar_obj):
         self.lidar_obj = lidar_obj
