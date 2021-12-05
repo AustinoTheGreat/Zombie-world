@@ -7,12 +7,12 @@ centralWidgetVisible: 1
 orthographicViewHeight: 1
 textFiles: 0 "controllers/youbot_controller/youbot_controller.py" "controllers/youbot_controller/world_info_structure.py"
 consoles: Console:All:All
-renderingDevicePerspectives: youBot:BackHighRes;1;1;0.519916;0.047182
-renderingDevicePerspectives: youBot:BackLowRes;1;1;0;0
-renderingDevicePerspectives: youBot:ForwardHighRes;1;1;0.0450734;0.14941
-renderingDevicePerspectives: youBot:ForwardHighResSmall;1;0.570313;0.081761;0.00524245
-renderingDevicePerspectives: youBot:ForwardHighResSmallFov;1;0.578125;0.257862;0.00524239
-renderingDevicePerspectives: youBot:ForwardLowResBigFov;1;1;0;0
-renderingDevicePerspectives: youBot:LeftLowRes;1;1;0;0
-renderingDevicePerspectives: youBot:RightLowRes;1;1;0;0
-renderingDevicePerspectives: youBot:range-finder;1;1.01563;0;0
+renderingDevicePerspectives: youBot:BackHighRes;0;1;0.519916;0.047182
+renderingDevicePerspectives: youBot:BackLowRes;0;1;0.192872;0.0696921
+renderingDevicePerspectives: youBot:ForwardHighRes;0;1;0.00628931;0.0586482
+renderingDevicePerspectives: youBot:ForwardHighResSmall;0;0.570313;0.081761;0.00524245
+renderingDevicePerspectives: youBot:ForwardHighResSmallFov;0;0.578125;0.257862;0.00524239
+renderingDevicePerspectives: youBot:ForwardLowResBigFov;1;2.125;0.680294;0.0259318
+renderingDevicePerspectives: youBot:LeftLowRes;0;1;0.0534591;0.19611
+renderingDevicePerspectives: youBot:RightLowRes;0;1;0.0272537;0.142626
+renderingDevicePerspectives: youBot:range-finder;1;1.01563;0.00104822;0

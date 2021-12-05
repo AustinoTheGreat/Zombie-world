@@ -59,7 +59,8 @@ def get_img_obj(img, lower_range, higher_range):
     mask = cv2.inRange(img, np.array(lower_range), np.array(higher_range))
     
     # Find segmented contours and their center
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     # largest_contour = max(contours, key=cv2.contourArea)
     # largest_contour_center = cv2.moments(largest_contour)
     
@@ -71,7 +72,30 @@ def get_img_obj(img, lower_range, higher_range):
             objs.append(image_obj(center_x, center_x))
     return objs   
      
+# Color ranges for zombies and berries, HSV
+red_lower_range = [110, 150, 0]
+red_higher_range = [130, 230, 255]
 
+orange_lower_range = [100, 100, 0]
+orange_higher_range = [120, 150, 255]
+
+yellow_lower_range = [60, 150, 0]
+yellow_higher_range = [100, 230, 255]
+
+pink_lower_range = [130, 50, 0]
+pink_higher_range = [160, 255, 255]
+
+blue_lower_range = [0, 150, 0]
+blue_higher_range = [20, 230, 255]
+
+green_lower_range = [40, 150, 0]
+green_higher_range = [60, 230, 255]
+
+purple_lower_range = [160, 150, 0]
+purple_higher_range = [180, 230, 255]
+
+aqua_lower_range = [20, 150, 0]
+aqua_higher_range = [40, 230, 255]
 
 
 #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
@@ -213,44 +237,20 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
-        # Color Ranges, red and blue done
-        red_lower_range = [50, 150, 0]
-        red_higher_range = [200, 230, 255]
-        
-        orange_lower_range = [50, 150, 0]
-        orange_higher_range = [200, 230, 255]
-        
-        yellow_lower_range = [50, 150, 0]
-        yellow_higher_range = [200, 230, 255]
-        
-        pink_lower_range = [50, 150, 0]
-        pink_higher_range = [200, 230, 255]
-    
-        # 10, 39, 94 fpr shadows
-        blue_lower_range = [3, 33, 88]
-        blue_higher_range = [39, 145, 235]
- 
-        green_lower_range = [50, 150, 0]
-        green_higher_range = [200, 230, 255]
-        
-        purple_lower_range = [43, 10, 94]
-        purple_higher_range = [112, 60, 181]
-        
-        aqua_lower_range = [50, 150, 0]
-        aqua_higher_range = [200, 230, 255]
+
         
         
         front_img = get_image_from_camera(camera1)
         front_img = cv2.cvtColor(front_img, cv2.COLOR_RGB2HSV)
         
-        berries = get_img_obj(front_img, purple_lower_range, purple_higher_range)
+        berries = get_img_obj(front_img, orange_lower_range, orange_higher_range)
         for item in berries:
             print(item.x, item.y)
         print("end")
         
         
         # Speed can be set from 0 to 10
-        move_forward(3, wheels)
+        move_forward(8, wheels)
         
         
          

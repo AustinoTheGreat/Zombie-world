@@ -12,7 +12,7 @@ renderingDevicePerspectives: youBot:BackLowRes;0;0.5;0;0
 renderingDevicePerspectives: youBot:ForwardHighRes;0;0.25;0;0
 renderingDevicePerspectives: youBot:ForwardHighResSmall;0;0.25;0;0
 renderingDevicePerspectives: youBot:ForwardHighResSmallFov;0;0.25;0;0
-renderingDevicePerspectives: youBot:ForwardLowResBigFov;1;2.76563;0.194404;0.161936
+renderingDevicePerspectives: youBot:ForwardLowResBigFov;1;2.76563;0.279824;0.0100161
 renderingDevicePerspectives: youBot:LeftLowRes;0;0.5;0;0
 renderingDevicePerspectives: youBot:RightLowRes;0;0.5;0;0
 renderingDevicePerspectives: youBot:range-finder;1;2.15625;0;0.0710279
