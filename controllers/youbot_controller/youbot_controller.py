@@ -309,7 +309,7 @@ def main():
         
         # lidar.recalculate()
         if (go_toward_seen_berry(camera5, wheels, 4) == False):
-            move_backward(4, wheels)
+            turn_left(4, wheels)
             
 
         
