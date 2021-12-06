@@ -18,6 +18,13 @@ class Object_Id:
     PURPLE_ZOMBIE = 9
     ZOMBIE_UNIDENTIFIED = 10
     TREE = 11
+
+class Robot_State:
+    UNIDENTIFIED = 0
+    AVOID_ZOMBIE = 1
+    AIM_BERRY = 2
+    STEPBRO = 3
+    
     
 class Object_Id:
     """Enum of the berry behaviors"""

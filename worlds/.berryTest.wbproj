@@ -8,7 +8,7 @@ orthographicViewHeight: 1
 textFiles: 0 "controllers/youbot_controller/youbot_controller.py"
 consoles: Console:All:All
 renderingDevicePerspectives: youBot:BackHighRes;1;0.25;0;0
-renderingDevicePerspectives: youBot:BackLowRes;1;0.5;0;0
+renderingDevicePerspectives: youBot:BackLowRes;1;2.20313;0;0
 renderingDevicePerspectives: youBot:ForwardHighRes;1;0.25;0;0
 renderingDevicePerspectives: youBot:ForwardHighResSmall;1;0.25;0;0
 renderingDevicePerspectives: youBot:ForwardHighResSmallFov;1;0.25;0;0

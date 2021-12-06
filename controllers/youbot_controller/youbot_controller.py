@@ -14,20 +14,23 @@ import cv2
 import numpy as np
 
 class image_obj:
-    def __init__(self, x, y, color): 
+    def __init__(self, x, y, color, area): 
         self.x = x 
         self.y = y
         self.color = color
         self.distance = 0
         self.angle = 0
+        self.area = area
+        
 
 SPEED_STEP = 1.48
 P_COEFFICIENT = 0.1
 
 BERRY_GOAL_COLOR = ""
-BERRY_GOAL_X = 0
-BERRY_GOAL_Y = 0
 
+g_robot_state = Robot_State.UNIDENTIFIED
+g_GPS = [0, 0, 0]
+g_GPS_timer = 0
 
 # Color ranges for zombies and berries, HSV
 red_lower_range = [110, 150, 0]
@@ -66,7 +69,7 @@ def move_forward(speed, wheels = []):
     speeds = [speed*SPEED_STEP, speed*SPEED_STEP, speed*SPEED_STEP, speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
 
-# 0-10  
+# 0-10
 def move_backward(speed, wheels = []):
     speeds = [-speed*SPEED_STEP, -speed*SPEED_STEP, -speed*SPEED_STEP, -speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
@@ -110,14 +113,12 @@ def get_img_obj(img, lower_range, higher_range, color):
         if center['m00'] != 0:
             center_x = int(center['m10'] / center['m00'])
             center_y = int(center['m01'] / center['m00'])
-            objs.append(image_obj(center_x, center_x, color))
+            area = cv2.contourArea(item)
+            objs.append(image_obj(center_x, center_x, color, area))
     return objs   
     
 def go_toward_seen_berry(camera5, wheels, speed):
     global BERRY_GOAL_COLOR
-    global BERRY_GOAL_X
-    global BERRY_GOAL_Y
-    print(BERRY_GOAL_COLOR)
     
     berries = front_berries(camera5)
     
@@ -130,20 +131,20 @@ def go_toward_seen_berry(camera5, wheels, speed):
             
             chosen_x = berries[chosen].x;
             BERRY_GOAL_COLOR = berries[chosen].color
-            BERRY_GOAL_X = berries[chosen].x
-            BERRY_GOAL_Y = berries[chosen].y
             
         else: 
             matching_berries = find_same_color(berries)
             if len(matching_berries) == 1:
                 chosen_x = matching_berries[0].x;
             elif len(matching_berries) > 1:
-                lowest_diff_x = 100
+                largest_area = 0
                 berry_index = 0
                 for i in range(0, len(matching_berries)):
-                    if abs(matching_berries[i].x - BERRY_GOAL_X) < lowest_diff_x:
-                        lowest_diff_x = abs(matching_berries[i].x - BERRY_GOAL_X)
+                    if matching_berries[i].area > largest_area:
+                        largest_area = matching_berries[i].area
                         berry_index = i
+                        
+                
                 chosen_x = matching_berries[berry_index].x
                     
             else:
@@ -152,13 +153,6 @@ def go_toward_seen_berry(camera5, wheels, speed):
                 
                 chosen_x = berries[chosen].x;
                 BERRY_GOAL_COLOR = berries[chosen].color
-                BERRY_GOAL_X = berries[chosen].x
-                BERRY_GOAL_Y = berries[chosen].y
-                
-                
-                
-                
-                
             
         
         error = camera5.getWidth() / 2 - chosen_x
@@ -192,6 +186,37 @@ def find_same_color(berries = [], *args):
         if item.color == BERRY_GOAL_COLOR:
             matching_berries.append(item)
     return matching_berries
+    
+
+def robot_stuck(gps):
+    
+    global g_GPS_timer
+    global g_GPS
+    global g_robot_state
+    print(g_robot_state)
+    
+    g_GPS_timer = g_GPS_timer + 1
+    
+    if (g_GPS_timer < 50):
+        g_robot_state = Robot_State.UNIDENTIFIED
+        return False
+    elif (g_GPS_timer == 50):
+        g_GPS_timer = 0
+        cur = gps.getValues()
+        diff_X = abs(g_GPS[0] - cur[0])
+        diff_Z = abs(g_GPS[2] - cur[2])
+        g_GPS = cur
+        
+        if (diff_X <= 0.2 and diff_Z <= 0.2):
+            g_robot_state = Robot_State.STEPBRO
+            g_GPS_timer = 20
+            return True
+        else:
+            g_robot_state = Robot_State.UNIDENTIFIED
+            return False
+            
+        
+        
             
         
         
@@ -278,13 +303,6 @@ def main():
     
     wheels = [fr, fl, br, bl]
     
-
-    # Robot arm
-    arm1 = robot.getDevice("arm1")
-    arm2 = robot.getDevice("arm2")
-    arm3 = robot.getDevice("arm3")
-    arm4 = robot.getDevice("arm4")
-
     # fr.setPosition(float('inf'))
     # fl.setPosition(float('inf'))
     # br.setPosition(float('inf'))
@@ -318,7 +336,7 @@ def main():
            
 
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
-    
+    global g_GPS_timer
     
     while(robot_not_dead == 1):
         
@@ -368,18 +386,30 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
-        lidar.recalculate()
-        lidar_front_items = lidar.identify_items_front()
-        berries = go_toward_seen_berry(camera5, wheels, 4)
+        # lidar.recalculate()   
+        # lidar_front_items = lidar.identify_items_front()
+        
+        # print(lidar_front_items[0])
+        
+        # move_backward(6, wheels)
+        
+        berries = go_toward_seen_berry(camera5, wheels, 5)
+        
+        if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
+            if g_GPS_timer > 10:
+                move_forward(5, wheels)
+            else:
+                turn_left(4, wheels)
+            g_GPS_timer = g_GPS_timer - 1
+        else:
+            print("here")
+            robot_stuck(gps)
         
         if (berries == []):
-            turn_left(4, wheels)
-        else:
-            pass
-            
-            
-            
-
+            turn_left(3, wheels)
+        
+        
+        
         
         # img = get_image_from_camera(camera5)
         # img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
@@ -402,10 +432,7 @@ def main():
         # print("RIGHT ITEMS")
         # print_item_array_info(lidar.items_right)
         
-        arm1.setPosition(0)
-        arm2.setPosition(-1.13)
-        arm3.setPosition(-.5)
-        arm4.setPosition(0)
+        
 
 
 
