@@ -117,7 +117,7 @@ def go_toward_seen_berry(camera5, wheels, speed):
     global BERRY_GOAL_COLOR
     global BERRY_GOAL_X
     global BERRY_GOAL_Y
-    print(BERRY_GOAL_COLOR)
+    # print(BERRY_GOAL_COLOR)
     
     berries = front_berries(camera5)
     
@@ -317,7 +317,11 @@ def main():
 
 
     i=0
-           
+    
+    # Berry movement sequence constants
+    forward_buffer_length = 0
+    berries = []
+    prev_num_berries = 0
 
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     
@@ -372,12 +376,36 @@ def main():
         
         lidar.recalculate()
         lidar_front_items = lidar.identify_items_front()
-        berries = go_toward_seen_berry(camera5, wheels, 4)
         
-        if (berries == []):
-            turn_left(4, wheels)
-        else:
-            pass
+        # print(forward_buffer_length)
+
+
+
+
+        # # Move forward every time a berry goes out of view(is consumed/ out of view from stump)
+        # if(forward_buffer_length > 0):
+        #     print("GOING FORWARD")
+        #     move_backward(4, wheels)
+        #     forward_buffer_length-=1
+        #     if(forward_buffer_length == 1):
+        #         prev_num_berries = 0
+        #     continue
+
+        # berries = go_toward_seen_berry(camera5, wheels, 4)
+        
+        # # Intiiate moving forward every time a berry goes out of view(is consumed/ out of view from stump)
+        # if(prev_num_berries and berries== []):# berry was captured
+        #     print("BERRY CAPTURED?!")
+        #     forward_buffer_length  += 10 #move forward for 20 timesteps
+        #     continue
+
+
+        # prev_num_berries = len(berries)
+        
+        # if (berries == []):
+        #     turn_left(4, wheels)
+        # else:
+        #     pass
             
             
             
@@ -390,8 +418,10 @@ def main():
         
 
         # print("FRONT ITEMS")
+        # print(lidar.items_front[40:80])
+
         # print_item_array_info(lidar.items_front)
-        # print(sum_ignore_inf(lidar.items_right)/128)
+        # print("Average", sum_ignore_inf(lidar.items_right)/128)
 
 
         # print_item_array_info(lidar.items_front[118:128])
@@ -405,10 +435,10 @@ def main():
         # print_item_array_info(lidar.items_right)
         
         # Arm Extending in the direction of Kuka back(direction of camera )
-        arm1.setPosition(0)
-        arm2.setPosition(-1.13)
-        arm3.setPosition(-.5)
-        arm4.setPosition(0)
+        # arm1.setPosition(0)
+        # arm2.setPosition(-1.13)
+        # arm3.setPosition(-.5)
+        # arm4.setPosition(0)
 
         # Arm Extending Towards Kuka front
         # arm1.setPosition(0)
