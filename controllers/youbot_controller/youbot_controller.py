@@ -239,6 +239,13 @@ def main():
     
     wheels = [fr, fl, br, bl]
     
+
+    # Robot arm
+    arm1 = robot.getDevice("arm1")
+    arm2 = robot.getDevice("arm2")
+    arm3 = robot.getDevice("arm3")
+    arm4 = robot.getDevice("arm4")
+
     # fr.setPosition(float('inf'))
     # fl.setPosition(float('inf'))
     # br.setPosition(float('inf'))
@@ -356,7 +363,10 @@ def main():
         # print("RIGHT ITEMS")
         # print_item_array_info(lidar.items_right)
         
-        
+        arm1.setPosition(0)
+        arm2.setPosition(-1.13)
+        arm3.setPosition(-.5)
+        arm4.setPosition(0)
 
 
 
