@@ -55,6 +55,8 @@ DEF Youbot Youbot {
   controller "youbot_controller"
   supervisor TRUE
   bodySlot [
+    InertialUnit {
+    }
     Accelerometer {
     }
     GPS {
@@ -89,8 +91,7 @@ DEF Youbot Youbot {
       rotation 0.5773506025225371 -0.5773506025225371 -0.5773496025232256 2.09439
       name "ForwardHighResSmall"
       fieldOfView 0.5
-      width 256
-      height 128
+      width 128
     }
     DEF BackLowRes Camera {
       translation -0.27 -2.00826e-06 1.02099e-06
@@ -144,7 +145,7 @@ DEF Youbot Youbot {
     }
   ]
 }
-DEF Berry13 Solid {
+DEF Berry0 Solid {
   translation 9.1003 0.249177 0.179809
   rotation -0.4472135954998153 2.4166820336214355e-12 -0.8944271909999872 0.0010477170011384145
   children [
@@ -164,10 +165,11 @@ DEF Berry13 Solid {
     size 0.1 0.1 0.1
   }
   physics Physics {
+    density 100
   }
 }
 DEF BOX1 Solid {
-  translation -0.93 0.1 0.18
+  translation 9.16 0.1 0.18
   rotation -0.7774744030964151 0.09313982042610232 -0.6219795224771202 2.1933874080388928e-16
   scale 2 2 2
   children [

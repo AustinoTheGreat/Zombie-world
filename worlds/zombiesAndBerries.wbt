@@ -46,6 +46,8 @@ DEF Youbot Youbot {
   controller "youbot_controller"
   supervisor TRUE
   bodySlot [
+    InertialUnit {
+    }
     Accelerometer {
     }
     GPS {
@@ -80,8 +82,7 @@ DEF Youbot Youbot {
       rotation 0.5773506025225371 -0.5773506025225371 -0.5773496025232256 2.09439
       name "ForwardHighResSmall"
       fieldOfView 0.5
-      width 256
-      height 128
+      width 128
     }
     DEF BackLowRes Camera {
       translation -0.27 -2.00826e-06 1.02099e-06
@@ -293,7 +294,7 @@ DEF zombie1 Pedestrian {
   leftHandAngle 0.11563636363636419
   headAngle 0.003272727272726854
 }
-DEF zombie4 Pedestrian {
+DEF zombie2 Pedestrian {
   translation -0.2575249436194565 1.27 6.951264149888269
   rotation 0 1 0 -2.4126957399490436
   name "pedestrian(5)"
@@ -326,7 +327,7 @@ DEF zombie4 Pedestrian {
   leftHandAngle 0.11563636363636419
   headAngle 0.003272727272726854
 }
-DEF zombie5 Pedestrian {
+DEF zombie3 Pedestrian {
   translation 0.00222015 1.27 -7.98276
   rotation 0 1 0 2.542269011900159
   name "pedestrian(4)"

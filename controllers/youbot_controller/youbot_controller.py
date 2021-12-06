@@ -303,6 +303,11 @@ def main():
     
     wheels = [fr, fl, br, bl]
     
+    arm1 = robot.getDevice("arm1")
+    arm2 = robot.getDevice("arm2")
+    arm3 = robot.getDevice("arm3")
+    arm4 = robot.getDevice("arm4")
+    
     # fr.setPosition(float('inf'))
     # fl.setPosition(float('inf'))
     # br.setPosition(float('inf'))
