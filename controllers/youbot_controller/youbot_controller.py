@@ -14,15 +14,19 @@ import cv2
 import numpy as np
 
 class image_obj:
-    def __init__(self, x, y): 
+    def __init__(self, x, y, color): 
         self.x = x 
         self.y = y
-        self.color = 0
+        self.color = color
         self.distance = 0
         self.angle = 0
 
 SPEED_STEP = 1.48
 P_COEFFICIENT = 0.1
+
+BERRY_GOAL_COLOR = ""
+BERRY_GOAL_X = 0
+BERRY_GOAL_Y = 0
 
 
 # Color ranges for zombies and berries, HSV
@@ -90,7 +94,7 @@ def get_image_from_camera(camera):
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
     return cv2.flip(img, 1)
 
-def get_img_obj(img, lower_range, higher_range):
+def get_img_obj(img, lower_range, higher_range, color):
 
     objs = []
     mask = cv2.inRange(img, np.array(lower_range), np.array(higher_range))
@@ -106,41 +110,52 @@ def get_img_obj(img, lower_range, higher_range):
         if center['m00'] != 0:
             center_x = int(center['m10'] / center['m00'])
             center_y = int(center['m01'] / center['m00'])
-            objs.append(image_obj(center_x, center_x))
+            objs.append(image_obj(center_x, center_x, color))
     return objs   
     
 def go_toward_seen_berry(camera5, wheels, speed):
     
     berries = front_berries(camera5)
-    print(berries)
     
     if (len(berries) != 0):
-        error = camera5.getWidth() / 2 - berries[0].x
+        # Choose which berry color is best
+        chosen = 0;
+        
+        # if (BERRY_GOAL_COLOR = ""):
+            # BERRY_GOAL_COLOR = berries[chosen].color
+            # BERRY_GOAL_X = berries[chosen].x
+            # BERRY_GOAL_Y = berries[chosen].y
+        # elif (find_same_color(berries, BERRY_GOAL_COLOR) != 0):
+            
+        
+        error = camera5.getWidth() / 2 - berries[chosen].x
         speeds = [0, 0, 0, 0]
         speeds[1] = -error * P_COEFFICIENT - speed * SPEED_STEP
         speeds[3] = -error * P_COEFFICIENT - speed * SPEED_STEP
         speeds[0] = error * P_COEFFICIENT - speed * SPEED_STEP
         speeds[2] = error * P_COEFFICIENT - speed * SPEED_STEP
         base_set_wheel_speed_helper(speeds, wheels)
-        return True
+        return berries
     else:
-        return False
+        return berries
     
      
 def front_berries(camera):
     img = get_image_from_camera(camera)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     
-    red = get_img_obj(img, red_lower_range, red_higher_range)
-    orange = get_img_obj(img, orange_lower_range, orange_higher_range)
-    pink = get_img_obj(img, pink_lower_range, pink_higher_range)
-    yellow = get_img_obj(img, yellow_lower_range, yellow_higher_range)
+    red = get_img_obj(img, red_lower_range, red_higher_range, "red")
+    orange = get_img_obj(img, orange_lower_range, orange_higher_range, "orange")
+    pink = get_img_obj(img, pink_lower_range, pink_higher_range, "pink")
+    yellow = get_img_obj(img, yellow_lower_range, yellow_higher_range, "yellow")
     
     berries = red + orange + pink + yellow
     
     return berries
 
-
+# def find_same_color(berries = [], BERRY_GOAL_COLOR):
+    # for item in berries:
+        # if item.color == BERRY_GOAL_COLOR
 
 #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
 
@@ -307,9 +322,16 @@ def main():
         
         #make decisions using inputs if you choose to do so
         
-        # lidar.recalculate()
-        if (go_toward_seen_berry(camera5, wheels, 4) == False):
+        lidar.recalculate()
+        lidar_front_items = lidar.identify_items_front()
+        berries = go_toward_seen_berry(camera5, wheels, 4)
+        
+        if (berries == []):
             turn_left(4, wheels)
+        else:
+            pass
+            
+            
             
 
         
