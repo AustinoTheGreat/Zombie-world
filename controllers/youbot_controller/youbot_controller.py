@@ -329,11 +329,17 @@ def main():
         for i in arr:
             if i != positive_infinity:
                 sum+=i
+            else:
+                sum+=15 # magic number for getting sense of which side is free
         return sum
 
 
     i=0
-           
+    
+    # Berry movement sequence constants
+    forward_buffer_length = 0
+    berries = []
+    prev_num_berries = 0
 
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     global g_GPS_timer
@@ -418,8 +424,10 @@ def main():
         
 
         # print("FRONT ITEMS")
+        # print(lidar.items_front[40:80])
+
         # print_item_array_info(lidar.items_front)
-        # print(sum_ignore_inf(lidar.items_right)/128)
+        # print("Average", sum_ignore_inf(lidar.items_right)/128)
 
 
         # print_item_array_info(lidar.items_front[118:128])
@@ -432,8 +440,17 @@ def main():
         # print("RIGHT ITEMS")
         # print_item_array_info(lidar.items_right)
         
-        
+        # Arm Extending in the direction of Kuka back(direction of camera )
+        # arm1.setPosition(0)
+        # arm2.setPosition(-1.13)
+        # arm3.setPosition(-.5)
+        # arm4.setPosition(0)
 
+        # Arm Extending Towards Kuka front
+        # arm1.setPosition(0)
+        # arm2.setPosition(1.57)
+        # arm3.setPosition(0)
+        # arm4.setPosition(0)
 
 
         #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
