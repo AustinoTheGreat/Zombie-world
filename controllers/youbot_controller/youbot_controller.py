@@ -36,7 +36,7 @@ red_higher_range = [130, 230, 255]
 orange_lower_range = [100, 100, 0]
 orange_higher_range = [120, 150, 255]
 
-yellow_lower_range = [60, 150, 0]
+yellow_lower_range = [70, 150, 0]
 yellow_higher_range = [100, 230, 255]
 
 pink_lower_range = [130, 50, 0]
@@ -46,7 +46,7 @@ blue_lower_range = [0, 150, 0]
 blue_higher_range = [20, 230, 255]
 
 green_lower_range = [40, 150, 0]
-green_higher_range = [60, 230, 255]
+green_higher_range = [70, 230, 255]
 
 purple_lower_range = [160, 150, 0]
 purple_higher_range = [180, 230, 255]
@@ -114,21 +114,54 @@ def get_img_obj(img, lower_range, higher_range, color):
     return objs   
     
 def go_toward_seen_berry(camera5, wheels, speed):
+    global BERRY_GOAL_COLOR
+    global BERRY_GOAL_X
+    global BERRY_GOAL_Y
+    print(BERRY_GOAL_COLOR)
     
     berries = front_berries(camera5)
     
     if (len(berries) != 0):
-        # Choose which berry color is best
-        chosen = 0;
+        chosen_x = 0
         
-        # if (BERRY_GOAL_COLOR = ""):
-            # BERRY_GOAL_COLOR = berries[chosen].color
-            # BERRY_GOAL_X = berries[chosen].x
-            # BERRY_GOAL_Y = berries[chosen].y
-        # elif (find_same_color(berries, BERRY_GOAL_COLOR) != 0):
+        if (BERRY_GOAL_COLOR == ""):
+            # Choose which berry color is best
+            chosen = 0;
+            
+            chosen_x = berries[chosen].x;
+            BERRY_GOAL_COLOR = berries[chosen].color
+            BERRY_GOAL_X = berries[chosen].x
+            BERRY_GOAL_Y = berries[chosen].y
+            
+        else: 
+            matching_berries = find_same_color(berries)
+            if len(matching_berries) == 1:
+                chosen_x = matching_berries[0].x;
+            elif len(matching_berries) > 1:
+                lowest_diff_x = 100
+                berry_index = 0
+                for i in range(0, len(matching_berries)):
+                    if abs(matching_berries[i].x - BERRY_GOAL_X) < lowest_diff_x:
+                        lowest_diff_x = abs(matching_berries[i].x - BERRY_GOAL_X)
+                        berry_index = i
+                chosen_x = matching_berries[berry_index].x
+                    
+            else:
+                # Choose which berry color is best
+                chosen = 0;
+                
+                chosen_x = berries[chosen].x;
+                BERRY_GOAL_COLOR = berries[chosen].color
+                BERRY_GOAL_X = berries[chosen].x
+                BERRY_GOAL_Y = berries[chosen].y
+                
+                
+                
+                
+                
             
         
-        error = camera5.getWidth() / 2 - berries[chosen].x
+        error = camera5.getWidth() / 2 - chosen_x
         speeds = [0, 0, 0, 0]
         speeds[1] = -error * P_COEFFICIENT - speed * SPEED_STEP
         speeds[3] = -error * P_COEFFICIENT - speed * SPEED_STEP
@@ -150,12 +183,18 @@ def front_berries(camera):
     yellow = get_img_obj(img, yellow_lower_range, yellow_higher_range, "yellow")
     
     berries = red + orange + pink + yellow
-    
     return berries
 
-# def find_same_color(berries = [], BERRY_GOAL_COLOR):
-    # for item in berries:
-        # if item.color == BERRY_GOAL_COLOR
+def find_same_color(berries = [], *args):
+    global BERRY_GOAL_COLOR
+    matching_berries = []
+    for item in berries:
+        if item.color == BERRY_GOAL_COLOR:
+            matching_berries.append(item)
+    return matching_berries
+            
+        
+        
 
 #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
 
