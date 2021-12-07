@@ -37,7 +37,6 @@ g_berry_seen = 0
 g_berry_timer = 0
 g_explore_steps = 0
 g_explore_fails = 1
-
 # Color ranges for zombies and berries, HSV
 red_lower_range = [110, 150, 0]
 red_higher_range = [130, 230, 255]
@@ -65,6 +64,8 @@ aqua_higher_range = [40, 230, 255]
 
 black_lower_range = [0, 0, 0]
 black_higher_range = [255, 255, 40]
+
+g_touched_by_zombie = False
 
 
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
@@ -326,6 +327,7 @@ def avoid_zombie(lidar, robot_info):
     global g_last_health
     global g_lidar_sensor_values
     global g_robot_state
+    global g_touched_by_zombie
 
     if not g_last_health or not g_last_health > 0:
         g_last_health = robot_info[0]
@@ -350,6 +352,7 @@ def avoid_zombie(lidar, robot_info):
 
         elif g_last_health > robot_info[0] + 2:
             print("TOUCHED")
+            g_touched_by_zombie = True
             g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
             g_last_health = 0
             g_lidar_sensor_values = list()
@@ -406,6 +409,8 @@ def main():
     global g_berry_timer
     global g_explore_steps
     global g_explore_fails
+    global g_touched_by_zombie
+
     
     # Berry out of sight sequence constants
     forward_buffer_length = 0
@@ -524,6 +529,7 @@ def main():
     HEALTH_MIN = 60 #When to start lloking for berries
 
     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
+    last_health = 100
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     
     while(robot_not_dead == 1):
@@ -584,7 +590,11 @@ def main():
 
         # Move forward every time a berry goes out of view(is consumed/ out of view from stump)
         # start here
-            
+
+
+        # Check if we've been touched by a zombie before
+        if robot_info[0] < last_health - 1:
+            g_touched_by_zombie = True
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -651,7 +661,7 @@ def main():
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
-            if g_zombie_turn_angle > 355 or g_zombie_turn_angle < 5:
+            if g_zombie_turn_angle > 175 and g_zombie_turn_angle < 185:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_MOVE
             else:
                 if g_zombie_turn_angle > 180:
