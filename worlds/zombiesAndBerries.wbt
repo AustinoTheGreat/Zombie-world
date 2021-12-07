@@ -225,7 +225,7 @@ DEF Berry3 Solid {
   }
 }
 DEF zombie0 Pedestrian {
-  translation -7.707573600054271 1.27 -7.145606399945701
+  translation -4.00632 1.27 -3.60796
   rotation 0 1 0 0.8080057916952204
   name "pedestrian1"
   controller "blue_zombie"
