@@ -339,7 +339,7 @@ def avoid_zombie(lidar, robot_info):
     lidar.recalculate()
     curr_frame = lidar.get_all_angles()
     g_lidar_sensor_values.append(curr_frame)
-    print("HEALTH INFO", str(g_last_health), "<", str(robot_info[0]), "+ 1 or", str(g_last_health_at_check))
+    print("HEALTH INFO", str(robot_info[0]), "<", str(g_last_health), "- 1 or", str(g_last_health_at_check))
 
     if len(g_lidar_sensor_values) >= SIG_FRAMES:
         first_frame = g_lidar_sensor_values.pop(0)
@@ -354,19 +354,20 @@ def avoid_zombie(lidar, robot_info):
             return g_zombie_turn_angle
             # TURN AND STATE CHANGE
 
-        elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
-            print("TOUCHED")
-            g_touched_by_zombie = True
-            g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
-            g_last_health = 0
-            g_lidar_sensor_values = list()
-
-            return g_zombie_turn_angle
-            # TURN AND STATE CHANGE
-
         else:
             g_last_health = robot_info[0]
             return -1
+
+    elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
+        print("TOUCHED")
+        g_touched_by_zombie = True
+        g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
+        g_last_health = 0
+        g_lidar_sensor_values = list()
+
+        return g_zombie_turn_angle
+        # TURN AND STATE CHANGE
+    
     else:
         g_last_health = robot_info[0]
         return -1
