@@ -67,6 +67,7 @@ black_higher_range = [255, 255, 40]
 
 g_touched_by_zombie = False
 
+g_last_health_at_check = 100
 
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
     for i in range(0, 4):
@@ -328,6 +329,7 @@ def avoid_zombie(lidar, robot_info):
     global g_lidar_sensor_values
     global g_robot_state
     global g_touched_by_zombie
+    global g_last_health_at_check
 
     if not g_last_health or not g_last_health > 0:
         g_last_health = robot_info[0]
@@ -335,7 +337,7 @@ def avoid_zombie(lidar, robot_info):
     lidar.recalculate()
     curr_frame = lidar.get_all_angles()
     g_lidar_sensor_values.append(curr_frame)
-    print("HEALTH INFO", str(g_last_health), "<", str(robot_info[0]), "+ 2")
+    print("HEALTH INFO", str(g_last_health), "<", str(robot_info[0]), "+ 1 or", str(g_last_health_at_check))
 
     if len(g_lidar_sensor_values) >= SIG_FRAMES:
         first_frame = g_lidar_sensor_values.pop(0)
@@ -350,7 +352,7 @@ def avoid_zombie(lidar, robot_info):
             return g_zombie_turn_angle
             # TURN AND STATE CHANGE
 
-        elif g_last_health > robot_info[0] + 2:
+        elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
             print("TOUCHED")
             g_touched_by_zombie = True
             g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
@@ -410,6 +412,7 @@ def main():
     global g_explore_steps
     global g_explore_fails
     global g_touched_by_zombie
+    global g_last_health_at_check
 
     
     # Berry out of sight sequence constants
@@ -524,12 +527,13 @@ def main():
     g_zombie_moved_start_time = -1
 
     RUNAWAY_TIME = 40
-    STOP_TIME = 10 #Time it takes the the robot to come to a complete halt
+    STOP_TIME = 3 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 60 #When to start lloking for berries
 
     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
     last_health = 100
+    g_last_health_at_check = 100
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     
     while(robot_not_dead == 1):
@@ -593,8 +597,13 @@ def main():
 
 
         # Check if we've been touched by a zombie before
-        if robot_info[0] < last_health - 1:
+        if robot_info[0] < last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
             g_touched_by_zombie = True
+            
+            
+        last_health = robot_info[0]
+        if(timer%16==0):
+            g_last_health_at_check = robot_info[0]
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -664,7 +673,7 @@ def main():
             if g_zombie_turn_angle > 175 and g_zombie_turn_angle < 185:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_MOVE
             else:
-                if g_zombie_turn_angle > 180:
+                if g_zombie_turn_angle < 175:
                     g_zombie_turn_angle += 6.92
                     turn_left(6, wheels)
                 else:
