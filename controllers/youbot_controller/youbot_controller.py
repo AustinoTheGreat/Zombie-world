@@ -294,6 +294,22 @@ def get_zombie_angle_weighted_average(zombie_locations):
         #weights.append(1)
         print("Zombie Location: " + str(z["angle"]) + " Distance " + str(z["distance"]))
         angles_rad = np.radians(angles)
+<<<<<<< HEAD
+        x = y = 0
+        for i in range(len(angles_rad)):
+            x += weights[i] * np.cos([angles_rad[i]])
+            y += weights[i] * np.sin([angles_rad[i]])
+        if(x == 0 or y == 0):
+            return 0 #average is 0
+        average = int(np.degrees(np.arctan2(y, x)))
+        if average < 0:
+            average = 360 + average
+            # print("What Average " + str(average))
+        if average > 360:
+            average = average - 360
+        print("Average " + str(average))
+        return average
+=======
     x = y = 0
     for i in range(len(angles_rad)):
         x += weights[i] * np.cos(angles_rad[i])
@@ -308,6 +324,7 @@ def get_zombie_angle_weighted_average(zombie_locations):
     print("Average " + str(average))
     return average
 
+>>>>>>> d64b2d1921d18edc4146a2716eb663a1a0192598
 
 def find_optimum_move_location(frame, bias):
     """Finds the optimum move location, starting from opposite of where the zombie is"""
