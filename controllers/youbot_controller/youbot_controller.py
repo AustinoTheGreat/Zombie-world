@@ -545,7 +545,7 @@ def main():
     g_zombie_turn_angle = -1
     g_zombie_moved_start_time = -1
 
-    RUNAWAY_TIME = 40
+    RUNAWAY_TIME = 60
     STOP_TIME = 3 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
@@ -717,7 +717,8 @@ def main():
                 g_zombie_moved_start_time += 1
 
         else:
-            if g_touched_by_zombie:
+            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
+                                                                  robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
                 g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
