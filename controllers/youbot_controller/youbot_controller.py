@@ -442,7 +442,9 @@ def main():
         # Move forward every time a berry goes out of view(is consumed/ out of view from stump)
         # start here
             
+        
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
+        # stucked state
             g_berry_timer = 0
             if g_GPS_timer > 10:
                 print("exit out of")
@@ -451,11 +453,12 @@ def main():
                 turn_left(6, wheels)
             g_GPS_timer = g_GPS_timer - 1
         elif(forward_buffer_length > 0):
+        # inch forward state for stump
             print("GOING FORWARD")
             move_backward(4, wheels)
             forward_buffer_length-=1
             if(forward_buffer_length == 1 and stump_size(camera5, 1000) == True):
-            
+                # state for knocking off the berry of the stump
                 
                 print("start turn")
                 g_robot_state = Robot_State.SPIN
@@ -467,15 +470,18 @@ def main():
         
         
         elif (g_robot_state == Robot_State.SPIN and g_turn_timer > 0):
+            # spin state, used for knocking berry off of stump
             print("turned")
             turn_left(4, wheels)
             g_turn_timer = g_turn_timer - 1
         else:
+            # go to berry state
             print("go to berry", g_robot_state)
 
             robot_stuck(gps)
             berries = go_toward_seen_berry(camera5, wheels, 4)
             if g_robot_state == Robot_State.EXPLORE and g_berry_timer > 30:
+                # exploration state
                 move_backward(10, wheels)
                 if (robot_stuck(gps) == True):
                     g_berry_timer = 0
