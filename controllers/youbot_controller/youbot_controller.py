@@ -294,7 +294,6 @@ def get_zombie_angle_weighted_average(zombie_locations):
         #weights.append(1)
         print("Zombie Location: " + str(z["angle"]) + " Distance " + str(z["distance"]))
         angles_rad = np.radians(angles)
-<<<<<<< HEAD
         x = y = 0
         for i in range(len(angles_rad)):
             x += weights[i] * np.cos([angles_rad[i]])
@@ -309,22 +308,6 @@ def get_zombie_angle_weighted_average(zombie_locations):
             average = average - 360
         print("Average " + str(average))
         return average
-=======
-    x = y = 0
-    for i in range(len(angles_rad)):
-        x += weights[i] * np.cos(angles_rad[i])
-        y += weights[i] * np.sin(angles_rad[i])
-    if(x == 0 or y == 0):
-        return 0 #average is 0
-    average = int(np.degrees(np.arctan([y/x]))[0])
-    if average < 0:
-        average = 360 + average
-    if average > 360:
-        average = average - 360
-    print("Average " + str(average))
-    return average
-
->>>>>>> d64b2d1921d18edc4146a2716eb663a1a0192598
 
 def find_optimum_move_location(frame, bias):
     """Finds the optimum move location, starting from opposite of where the zombie is"""
@@ -578,8 +561,10 @@ def main():
     g_zombie_turn_angle = -1
     g_zombie_moved_start_time = -1
 
+    degree_turn = -1
+    
     RUNAWAY_TIME = 40
-    BACKTRACK_TIME = 20 #Time to reverse away from zombie
+    BACKTRACK_TIME = 30 #Time to reverse away from zombie
     STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
@@ -782,6 +767,10 @@ def main():
             else:
                 g_zombie_moved_start_time += 1
                 move_forward(10, wheels)
+
+
+        elif g_robot_state == Robot_State.EXPLORE_TURN:
+            pass
 
         else:
             if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and

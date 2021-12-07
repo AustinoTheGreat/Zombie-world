@@ -30,6 +30,7 @@ class Robot_State:
     AVOID_ZOMBIE_MOVE = 7
     AVOID_ZOMBIES_BRAKING= 8
     AVOID_ZOMBIES_BACKTRACK = 9
+    EXPLORE_TURN = 10
     
     
 class Object_Id:
