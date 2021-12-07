@@ -561,7 +561,7 @@ def main():
     g_zombie_turn_angle = -1
     g_zombie_moved_start_time = -1
 
-    RUNAWAY_TIME = 60
+    RUNAWAY_TIME = 40
     BACKTRACK_TIME = 20 #Time to reverse away from zombie
     STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
