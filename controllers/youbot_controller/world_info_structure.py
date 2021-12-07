@@ -65,6 +65,7 @@ class Berry_Array:
 
 
 class Lidar_Info:
+    ANGLE_STEP = 0.703125  # constant corresponding to angle difference between each lidar laser
     
     def __init__(self, lidar_obj):
         self.lidar_obj = lidar_obj
@@ -74,6 +75,7 @@ class Lidar_Info:
         self.items_right = []
         lidar_obj.enablePointCloud()
 
+
     def recalculate(self):
         range_image = self.lidar_obj.getRangeImage()
         self.items_front = range_image[447:511] + range_image[0:63]
@@ -81,31 +83,69 @@ class Lidar_Info:
         self.items_back = range_image[191:319]
         self.items_left = range_image[319:447]
         # self.items_front.append()
-        
-        
 
-    def identify_items_front(self):
+    GET_FRONT = 0
+    GET_RIGHT = 1
+    GET_BACK = 2
+    GET_LEFT = 3
+
+    def identify_items_by_val(self, val):
         front_objects = [] #dictionary with angle and distance of each item detected
         
         idx = 0
-        ANGLE_STEP = 0.703125 #constant corresponding to angle difference between each lidar laser 
-        for item_distance in self.items_front:
-            a = {"angle": idx *ANGLE_STEP, "distance" : item_distance}
+        access_arr = []
+        if val == self.GET_FRONT:
+            access_arr = self.items_front
+        elif val == self.GET_RIGHT:
+            access_arr = self.items_right
+        elif val == self.GET_BACK:
+            access_arr = self.items_back
+        elif val == self.GET_LEFT:
+            access_arr = self.items_left
+
+        for item_distance in access_arr:
+            a = {"angle": idx * self.ANGLE_STEP, "distance" : item_distance}
             front_objects.append(a)
+            idx += 1
         
         return front_objects
 
+    def get_all_angles(self):
+        all_objects = []  # dictionary with angle and distance of each item detected
+
+        idx = 0
+
+        range_image = self.lidar_obj.getRangeImage()
+
+        for item_distance in range_image:
+            a = {"angle": idx * self.ANGLE_STEP, "distance": item_distance}
+            all_objects.append(a)
+            idx += 1
+        return all_objects
 
 
+    def test_outputs(self):
+        print("FRONT ITEMS")
+        print_item_array_info(self.items_front)
+        print("BACK ITEMS")
+        print_item_array_info(self.items_back)
+        print("LEFT ITEMS")
+        print_item_array_info(self.items_left)
+        print("RIGHT ITEMS")
+        print_item_array_info(self.items_right)
+        
+        
+def print_item_array_info(arr):
+    idx = 0
+    ANGLE_STEP = 0.703125 #constant corresponding to angle difference between each lidar laser
 
+    # Print out items for objects in front 
+    for item_distance in arr:
+        degree = idx * ANGLE_STEP
 
-    # def test_outputs(self):
-    #     print("FRONT ITEMS")
-    #     print_item_array_info(self.items_front)
-    #     print("BACK ITEMS")
-    #     print_item_array_info(self.items_back)
-    #     print("LEFT ITEMS")
-    #     print_item_array_info(self.items_left)
-    #     print("RIGHT ITEMS")
-    #     print_item_array_info(self.items_right)
+        conv_degree = round(degree, 2)
+        conv_distance = round(item_distance, 2)
+        # if(r < 1):
+        print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
+        idx+=1
         

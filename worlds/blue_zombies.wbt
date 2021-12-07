@@ -28,8 +28,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.1325027531495619 -0.9576968712806254 -0.255459826875161 4.0876519557170905
-  position 26.021136291828714 18.36526152597332 -15.904645677302327
+  orientation 0.1019717620432439 -0.9738285140295245 -0.20312504771407186 4.081220095270703
+  position 12.104815269829306 6.937180213323633 -7.003078503425315
 }
 TexturedBackground {
 }
@@ -157,7 +157,7 @@ DEF Wall Solid {
   }
 }
 DEF zombie0 Pedestrian {
-  translation -7.707573600054271 1.27 -7.145606399945701
+  translation -2.74106 1.27 -2.39878
   rotation 0 1 0 0.8080057916952204
   name "pedestrian1"
   controller "blue_zombie"
@@ -223,8 +223,8 @@ DEF zombie1 Pedestrian {
   headAngle 0.003272727272726854
 }
 DEF zombie2 Pedestrian {
-  translation 10.280486098758777 1.27 3.149176098758735
-  rotation 0 1 0 -1.2336738617206322
+  translation -3.88363 1.27 2.58731
+  rotation 0 1 0 -2.2808753071795866
   name "pedestrian(2)"
   controller "blue_zombie"
   controllerArgs [
