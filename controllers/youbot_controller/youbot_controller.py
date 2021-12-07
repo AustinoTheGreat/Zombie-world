@@ -513,6 +513,8 @@ def main():
 
     RUNAWAY_TIME = 40
     STOP_TIME = 10 #Time it takes the the robot to come to a complete halt
+    ENERGY_MIN = 40 #When to start looking for berries
+    HEALTH_MIN = 60 #When to start lloking for berries
 
     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
@@ -636,6 +638,9 @@ def main():
             g_zombie_turn_angle = avoid_zombie(lidar, robot_info)
             if g_zombie_turn_angle >= 0:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
+            # elif robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN:
+                # print("Exiting robot avoid zombie state")
+                # g_robot_state = Robot_State.UNIDENTIFIED
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
