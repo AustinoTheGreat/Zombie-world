@@ -397,20 +397,19 @@ def avoid_zombie(lidar, robot_info):
 
 def find_optimal_explore_angle(lidar):
     # 512
-    lidar_readings = lidar.getRangeImage()
-    cumulative_sum = [] * len(lidar_readings)
+    lidar_readings = lidar.get_all_angles()
+    cumulative_sum = []
     best_direction_index = 0
     largest_sum = 0
-
     for i in range(0, len(lidar_readings)):
-        if lidar_readings[i] == float(inf):
+        if lidar_readings[i] == float("inf"):
             lidar_readings[i] = 12
     for i in range(0, len(lidar_readings)):
-        cumulative_sum[i] = lidar_readings[i - 2] + lidar_readings[i - 1] + lidar_readings[i] + lidar_readings[i + 1] + lidar_readings[i + 2]
+        cumulative_sum.append(lidar_readings[i - 2]["distance"] + lidar_readings[i - 1]["distance"] + lidar_readings[i]["distance"] + lidar_readings[(i + 1)%len(lidar_readings)]["distance"] + lidar_readings[(i + 2)%len(lidar_readings)]["distance"])
     
     for i in range(0, len(cumulative_sum)):
-        if cumulative_sum > largest_sum:
-            largest_sum = cumulative_sum
+        if cumulative_sum[i] > largest_sum:
+            largest_sum = cumulative_sum[i]
             best_direction_index = i
     
     angle = float(i) * float(360/512)
@@ -814,7 +813,7 @@ def main():
                     degree_turn -= 6.92
                     turn_right(6, wheels)
         else:
-            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
+            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and g_touched_by_zombie and
                                                                   robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
                 if currently_taking_damage:
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
@@ -868,7 +867,7 @@ def main():
                     
                     degree_turn = find_optimal_explore_angle(lidar)
                     g_robot_state = Robot_State.EXPLORE_TURN
-]
+
                     g_explore_steps = 60 * g_explore_fails
                     
             else:
