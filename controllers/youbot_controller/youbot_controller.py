@@ -35,6 +35,8 @@ g_GPS_timer = 0
 g_turn_timer = 0
 g_berry_seen = 0
 g_berry_timer = 0
+g_explore_steps = 0
+g_explore_fails = 1
 
 # Color ranges for zombies and berries, HSV
 red_lower_range = [110, 150, 0]
@@ -131,6 +133,7 @@ def get_img_obj(img, lower_range, higher_range, color):
     
 def go_toward_seen_berry(camera5, wheels, speed):
     global BERRY_GOAL_COLOR
+    global g_explore_fails
     
     berries = front_berries(camera5)
     
@@ -174,6 +177,8 @@ def go_toward_seen_berry(camera5, wheels, speed):
         speeds[0] = error * P_COEFFICIENT - speed * SPEED_STEP
         speeds[2] = error * P_COEFFICIENT - speed * SPEED_STEP
         base_set_wheel_speed_helper(speeds, wheels)
+        
+        g_explore_fails = 1
         return berries
     else:
         return berries
@@ -221,7 +226,7 @@ def robot_stuck(gps):
         g_GPS = cur
         print(diff_X, diff_Z, g_robot_state)
         
-        if (diff_X <= 0.2 and diff_Z <= 0.2 or diff_Z <= 0.05 or diff_X <= 0.05):
+        if (diff_X <= 0.2 and diff_Z <= 0.2 or diff_Z <= 0.03 or diff_X <= 0.03):
             g_robot_state = Robot_State.STEPBRO
             g_GPS_timer = 40
             return True
@@ -501,6 +506,8 @@ def main():
     global g_robot_state
     global g_berry_seen
     global g_berry_timer
+    global g_explore_steps
+    global g_explore_fails
     
     # Berry out of sight sequence constants
     forward_buffer_length = 0
@@ -583,7 +590,12 @@ def main():
             move_backward(4, wheels)
             forward_buffer_length-=1
             if(forward_buffer_length == 1 and stump_size(camera5, 1000) == True):
-                # state for knocking off the berry of the stump
+            # state for knocking off the berry of the stump
+                # Arm Extending in the direction of Kuka back(direction of camera )
+                arm1.setPosition(0)
+                arm2.setPosition(-1.13)
+                arm3.setPosition(-.5)
+                arm4.setPosition(0)
                 
                 print("start turn")
                 g_robot_state = Robot_State.SPIN
@@ -599,27 +611,45 @@ def main():
             print("turned")
             turn_left(4, wheels)
             g_turn_timer = g_turn_timer - 1
+            if(g_turn_timer == 0):
+                arm1.setPosition(0)
+                arm2.setPosition(0)
+                arm3.setPosition(0)
+                arm4.setPosition(0)
         else:
             # go to berry state
             print("go to berry", g_robot_state)
 
             robot_stuck(gps)
-            berries = go_toward_seen_berry(camera5, wheels, 4)
-            if g_robot_state == Robot_State.EXPLORE and g_berry_timer > 30:
+            berries = go_toward_seen_berry(camera5, wheels, 9)
+            if g_robot_state == Robot_State.EXPLORE and g_explore_steps > 0:
                 # exploration state
+                
+                g_explore_steps = g_explore_steps - 1
                 move_backward(10, wheels)
                 
                 if (robot_stuck(gps) == True):
                     g_berry_timer = 0
                 elif (berries):
                     g_robot_state = Robot_State.UNIDENTIFIED
+                    
+                    g_berry_timer = 0
+                    g_explore_steps = 0
+                    q_explore_fails = 1
+                    
+                elif g_explore_steps == 0:
+                    g_robot_state = Robot_State.UNIDENTIFIED
+                    g_explore_fails = g_explore_fails + 1
                 
             elif (berries == []):
             
                 g_berry_timer = g_berry_timer + 1
                 turn_left(6, wheels)
                 if g_berry_timer == 30:
+                    g_berry_timer = 0
                     g_robot_state = Robot_State.EXPLORE
+                    g_explore_steps = 60 * g_explore_fails
+                    
             else:
                 g_berry_timer = 0
         
