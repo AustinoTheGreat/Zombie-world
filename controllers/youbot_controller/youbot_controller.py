@@ -304,20 +304,20 @@ def get_zombie_angle_weighted_average(zombie_locations):
         #weights.append(1)
         print("Zombie Location: " + str(z["angle"]) + " Distance " + str(z["distance"]))
         angles_rad = np.radians(angles)
-    x = y = 0
-    for i in range(len(angles_rad)):
-        x += weights[i] * np.cos(angles_rad[i])
-        y += weights[i] * np.sin(angles_rad[i])
-    if(x == 0 or y == 0):
-        return 0 #average is 0
-    average = int(np.degrees(np.arctan([y/x]))[0])
-    if average < 0:
-        average = 360 - average
-    if average > 360:
-        average = average - 360
-    print("Average " + str(average))
-    return average
-
+        x = y = 0
+        for i in range(len(angles_rad)):
+            x += weights[i] * np.cos([angles_rad[i]])
+            y += weights[i] * np.sin([angles_rad[i]])
+        if(x == 0 or y == 0):
+            return 0 #average is 0
+        average = int(np.degrees(np.arctan2(y, x)))
+        if average < 0:
+            average = 360 + average
+            # print("What Average " + str(average))
+        if average > 360:
+            average = average - 360
+        print("Average " + str(average))
+        return average
 
 def find_optimum_move_location(frame, bias):
     """Finds the optimum move location, starting from opposite of where the zombie is"""
@@ -576,12 +576,15 @@ def main():
     g_zombie_turn_angle = -1
     g_zombie_moved_start_time = -1
 
+    degree_turn = -1
+
     RUNAWAY_TIME = 40
-    BACKTRACK_TIME = 20 #Time to reverse away from zombie
+    BACKTRACK_TIME = 30 #Time to reverse away from zombie
     STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 60 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
 
+    last_gps_location = None
     last_health = 100
     g_last_health_at_check = 100
     currently_taking_damage = False
@@ -750,10 +753,19 @@ def main():
             if g_zombie_moved_start_time == -1:
                 g_zombie_moved_start_time = 0
                 move_forward(10, wheels)
+                last_gps_location = gps.getValues()
             elif g_zombie_moved_start_time > RUNAWAY_TIME:
                 move_forward(0, wheels)
                 g_zombie_moved_start_time = -1
-                g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
+
+                cur = gps.getValues()
+                diff_X = abs(last_gps_location[0] - cur[0])
+                diff_Z = abs(last_gps_location[2] - cur[2])
+
+                if diff_X <= 0.2 and diff_Z <= 0.2:
+                    g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
+                else:
+                    g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
             else:
                 move_forward(10, wheels)
                 g_zombie_moved_start_time += 1
@@ -771,11 +783,22 @@ def main():
                 g_zombie_moved_start_time += 1
                 move_forward(10, wheels)
 
+
+        elif g_robot_state == Robot_State.EXPLORE_TURN:
+            print("turning to explore")
+            if degree_turn > 355 or degree_turn < 5:
+                g_robot_state = Robot_State.EXPLORE
+            else:
+                if degree_turn > 180:
+                    degree_turn += 6.92
+                    turn_left(6, wheels)
+                else:
+                    degree_turn -= 6.92
+                    turn_right(6, wheels)
         else:
             if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
                                                                   robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
                 if currently_taking_damage:
-
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
                 else:
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
