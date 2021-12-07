@@ -67,6 +67,9 @@ aqua_higher_range = [40, 230, 255]
 black_lower_range = [0, 0, 0]
 black_higher_range = [255, 255, 40]
 
+g_touched_by_zombie = False
+
+g_last_health_at_check = 100
 
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
     for i in range(0, 4):
@@ -301,14 +304,18 @@ def find_optimum_move_location(frame, bias):
 
     for i in range(int(len(frame) / 2)):
         if frame[(start_i - i) % len(frame)]["distance"] == float("inf"):
+            print("Optimum:", str(frame[(start_i - i) % len(frame)]))
             return frame[(start_i - i) % len(frame)]["angle"]
         elif frame[(start_i + i) % len(frame)]["distance"] == float("inf"):
+            print("Optimum:", str(frame[(start_i + i) % len(frame)]))
             return frame[(start_i + i) % len(frame)]["angle"]
 
     for i in range(len(frame) / 2):
         if frame[(start_i - i) % len(frame)]["distance"] > 3:
+            print("Optimum:", str(frame[(start_i - i) % len(frame)]))
             return frame[(start_i - i) % len(frame)]["angle"]
         elif frame[(start_i + i) % len(frame)]["distance"] > 3:
+            print("Optimum:", str(frame[(start_i + i) % len(frame)]))
             return frame[(start_i + i) % len(frame)]["angle"]
 
     return bias
@@ -323,6 +330,8 @@ def avoid_zombie(lidar, robot_info):
     global g_last_health
     global g_lidar_sensor_values
     global g_robot_state
+    global g_touched_by_zombie
+    global g_last_health_at_check
 
     if not g_last_health or not g_last_health > 0:
         g_last_health = robot_info[0]
@@ -330,6 +339,7 @@ def avoid_zombie(lidar, robot_info):
     lidar.recalculate()
     curr_frame = lidar.get_all_angles()
     g_lidar_sensor_values.append(curr_frame)
+    print("HEALTH INFO", str(g_last_health), "<", str(robot_info[0]), "+ 1 or", str(g_last_health_at_check))
 
     if len(g_lidar_sensor_values) >= SIG_FRAMES:
         first_frame = g_lidar_sensor_values.pop(0)
@@ -337,14 +347,16 @@ def avoid_zombie(lidar, robot_info):
         if zombie_locations:
             zombie_weigted_center = get_zombie_angle_weighted_average(zombie_locations)
             bias_center = (zombie_weigted_center + 180.0) % 360
-            print("bias center " + str(bias_center))
+            print("bias center/Turn towards " + str(bias_center))
             g_zombie_turn_angle = find_optimum_move_location(curr_frame, bias_center)
             g_last_health = 0
             g_lidar_sensor_values = list()
             return g_zombie_turn_angle
             # TURN AND STATE CHANGE
 
-        elif g_last_health > robot_info[0] + 2:
+        elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
+            print("TOUCHED")
+            g_touched_by_zombie = True
             g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
             g_last_health = 0
             g_lidar_sensor_values = list()
@@ -356,6 +368,7 @@ def avoid_zombie(lidar, robot_info):
             g_last_health = robot_info[0]
             return -1
     else:
+        g_last_health = robot_info[0]
         return -1
 
 
@@ -400,6 +413,9 @@ def main():
     global g_berry_timer
     global g_explore_steps
     global g_explore_fails
+    global g_touched_by_zombie
+    global g_last_health_at_check
+
     
     # Berry out of sight sequence constants
     forward_buffer_length = 0
@@ -513,9 +529,13 @@ def main():
     g_zombie_moved_start_time = -1
 
     RUNAWAY_TIME = 40
-    STOP_TIME = 10 #Time it takes the the robot to come to a complete halt
+    STOP_TIME = 3 #Time it takes the the robot to come to a complete halt
+    ENERGY_MIN = 40 #When to start looking for berries
+    HEALTH_MIN = 60 #When to start lloking for berries
 
     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
+    last_health = 100
+    g_last_health_at_check = 100
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     
     while(robot_not_dead == 1):
@@ -576,7 +596,16 @@ def main():
 
         # Move forward every time a berry goes out of view(is consumed/ out of view from stump)
         # start here
+
+
+        # Check if we've been touched by a zombie before
+        if robot_info[0] < last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
+            g_touched_by_zombie = True
             
+            
+        last_health = robot_info[0]
+        if(timer%16==0):
+            g_last_health_at_check = robot_info[0]
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -637,18 +666,21 @@ def main():
             g_zombie_turn_angle = avoid_zombie(lidar, robot_info)
             if g_zombie_turn_angle >= 0:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
+            # elif robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN:
+                # print("Exiting robot avoid zombie state")
+                # g_robot_state = Robot_State.UNIDENTIFIED
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
-            if g_zombie_turn_angle > 355 or g_zombie_turn_angle < 5:
+            if g_zombie_turn_angle > 175 and g_zombie_turn_angle < 185:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_MOVE
             else:
-                if g_zombie_turn_angle > 180:
+                if g_zombie_turn_angle < 175:
                     g_zombie_turn_angle += 6.92
-                    turn_right(6, wheels)
+                    turn_left(6, wheels)
                 else:
                     g_zombie_turn_angle -= 6.92
-                    turn_left(6, wheels)
+                    turn_right(6, wheels)
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_MOVE:
             print("running from zombie now, started: " + str(g_zombie_moved_start_time))
