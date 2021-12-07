@@ -106,7 +106,7 @@ def print_item_array_info(arr):
         conv_degree = round(degree, 2)
         conv_distance = round(item_distance, 2)
         # if(r < 1):
-        print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
+        # print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
         idx+=1
         
 class image_obj:
@@ -133,6 +133,8 @@ g_berry_timer = 0
 g_explore_steps = 0
 g_explore_fails = 1
 g_berry_in_world_buffer = 0
+g_zombie_in_world_buffer = 0
+g_zombie_in_world = False
 g_berry_explore = 0
 g_berry_in_world = False
 
@@ -284,10 +286,22 @@ def front_berries(camera):
     orange = get_img_obj(img, orange_lower_range, orange_higher_range, "orange")
     pink = get_img_obj(img, pink_lower_range, pink_higher_range, "pink")
     yellow = get_img_obj(img, yellow_lower_range, yellow_higher_range, "yellow")
-    
-    
+
     berries = red + orange + pink + yellow
     return berries
+
+def front_zombies(camera):
+    """get a list of all zombies in camera FOV"""
+    img = get_image_from_camera(camera)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    
+    blue = get_img_obj(img, blue_lower_range, blue_higher_range, "blue")
+    green = get_img_obj(img, green_lower_range, green_higher_range, "green")
+    purple = get_img_obj(img, purple_lower_range, purple_higher_range, "purple")
+    aqua = get_img_obj(img, aqua_lower_range, aqua_higher_range, "aqua")
+
+    zombies = blue + green + purple + aqua
+    return zombies
 
 def find_same_color(berries = [], *args):
     """return matching berries"""
@@ -564,6 +578,8 @@ def main():
     global g_berry_in_world
     global g_berry_in_world_buffer
     global g_berry_explore
+    global g_zombie_in_world_buffer
+    global g_zombie_in_world
 
     
     # Berry out of sight sequence constants
@@ -752,7 +768,7 @@ def main():
         if(timer%16==0):
             g_last_health_at_check = robot_info[0]
 
-        # check if we have seen a berry in the world before
+        # check if we have seen a berry in the world
         if not g_berry_in_world:
             if(front_berries(camera5) != []):
                 g_berry_in_world_buffer = g_berry_in_world_buffer + 1
@@ -763,20 +779,32 @@ def main():
                 g_berry_in_world_buffer = 0
         else:
             pass
+
+        # check if we have seen a zombie in the world
+        if not g_zombie_in_world:
+            if(front_zombies(camera5) != []):
+                g_zombie_in_world_buffer = g_zombie_in_world_buffer + 1
+            else:
+                g_zombie_in_world_buffer = 0
+            if(g_zombie_in_world_buffer == 4):
+                g_zombie_in_world = True
+                g_zombie_in_world_buffer = 0
+        else:
+            pass
         
         # refer to documentation for logic of state transitions below
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
             g_berry_timer = 0
             if g_GPS_timer > 10:
-                print("exit out of")
-                move_forward(10, wheels)
+                print("Getting out of stucked situation")
+                move_forward(7, wheels)
             else:
-                turn_left(6, wheels)
+                turn_left(5, wheels)
             g_GPS_timer = g_GPS_timer - 1
         elif(forward_buffer_length > 0):
         # inch forward state for stump
-            print("GOING FORWARD")
+            print("Prepare stump maneuver")
             move_backward(4, wheels)
             forward_buffer_length-=1
             if(forward_buffer_length == 1 and stump_size(camera5, 1000) == True):
@@ -786,17 +814,14 @@ def main():
                 arm2.setPosition(-1.13)
                 arm3.setPosition(-.66)
                 arm4.setPosition(0)
-                
-                print("start turn")
+                print("Lower arm")
                 g_robot_state = Robot_State.SPIN
                 g_turn_timer = 40
-                
-            
                 prev_num_berries = 0
             continue
         elif g_robot_state == Robot_State.SPIN and g_turn_timer > 0:
             # spin state, used for knocking berry off of stump
-            print("turned")
+            print("Swing arm")
             turn_left(4, wheels)
             g_turn_timer = g_turn_timer - 1
             if(g_turn_timer == 0):
@@ -840,7 +865,7 @@ def main():
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_MOVE:
             print("running from zombie now, started: " + str(g_zombie_moved_start_time))
-            print(str(g_zombie_moved_start_time ), "<", str(RUNAWAY_TIME))
+            # print(str(g_zombie_moved_start_time ), "<", str(RUNAWAY_TIME))
             if g_zombie_moved_start_time == -1:
                 g_zombie_moved_start_time = 0
                 move_forward(10, wheels)
@@ -886,7 +911,7 @@ def main():
                     degree_turn -= 6.92
                     turn_right(6, wheels)
         else:
-            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and g_touched_by_zombie and
+            if ((g_touched_by_zombie) and not g_berry_in_world) or (g_berry_in_world and (g_touched_by_zombie or g_zombie_in_world) and
                                                                   robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
                 if currently_taking_damage:
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
