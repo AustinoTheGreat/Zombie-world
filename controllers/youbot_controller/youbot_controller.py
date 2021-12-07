@@ -372,7 +372,7 @@ def avoid_zombie(lidar, robot_info):
     elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
         print("TOUCHED")
         g_touched_by_zombie = True
-        g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
+        g_zombie_turn_angle = find_optimum_move_location(curr_frame, 180.0)
         g_last_health = 0
         g_lidar_sensor_values = list()
 
