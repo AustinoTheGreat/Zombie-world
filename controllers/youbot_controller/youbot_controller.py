@@ -37,6 +37,7 @@ g_berry_seen = 0
 g_berry_timer = 0
 g_explore_steps = 0
 g_explore_fails = 1
+g_berry_in_world_buffer = 0
 g_berry_in_world = False
 
 # Color ranges for zombies and berries, HSV
@@ -622,7 +623,10 @@ def main():
             g_last_health_at_check = robot_info[0]
 
         if not g_berry_in_world:
-            g_berry_in_world = front_berries(camera5) != []
+            if(front_berries(camera5) != []):
+                g_berry_in_world = g_berry_in_world + 1
+            if(g_berry_in_world == 4):
+                g_berry_in_world = True
         else:
             print("SEEN A BERRY")
         
@@ -726,8 +730,6 @@ def main():
 
             robot_stuck(gps)
             berries = go_toward_seen_berry(camera5, wheels, 9)
-            if(g_berry_in_world == False and berries):
-                g_berry_in_world = True
                 
             
             if g_robot_state == Robot_State.EXPLORE and g_explore_steps > 0:
