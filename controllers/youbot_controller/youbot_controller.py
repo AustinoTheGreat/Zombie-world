@@ -11,9 +11,108 @@ from world_info_structure import *
 #define functions here for making decisions and using sensor inputs
 
 import cv2
-import numpy as np
+import numpy as np    
 
+class Robot_State:
+    """Class encapsulating robot states"""
+    UNIDENTIFIED = 0
+    AVOID_ZOMBIE = 1
+    AIM_BERRY = 2
+    STEPBRO = 3
+    SPIN = 4
+    EXPLORE = 5
+    AVOID_ZOMBIE_TURN = 6
+    AVOID_ZOMBIE_MOVE = 7
+    AVOID_ZOMBIES_BRAKING= 8
+    AVOID_ZOMBIES_BACKTRACK = 9
+    EXPLORE_TURN = 10
+    
+
+class Lidar_Info:
+    ANGLE_STEP = 0.703125  # constant corresponding to angle difference between each lidar laser
+    
+    def __init__(self, lidar_obj):
+        self.lidar_obj = lidar_obj
+        self.items_front = []
+        self.items_back = []
+        self.items_left = []
+        self.items_right = []
+        lidar_obj.enablePointCloud()
+
+    def recalculate(self):
+        range_image = self.lidar_obj.getRangeImage()
+        self.items_front = range_image[447:511] + range_image[0:63]
+        self.items_right= range_image[63:191]
+        self.items_back = range_image[191:319]
+        self.items_left = range_image[319:447]
+        # self.items_front.append()
+
+    GET_FRONT = 0
+    GET_RIGHT = 1
+    GET_BACK = 2
+    GET_LEFT = 3
+
+    def identify_items_by_val(self, val):
+        front_objects = [] #dictionary with angle and distance of each item detected
+        
+        idx = 0
+        access_arr = []
+        if val == self.GET_FRONT:
+            access_arr = self.items_front
+        elif val == self.GET_RIGHT:
+            access_arr = self.items_right
+        elif val == self.GET_BACK:
+            access_arr = self.items_back
+        elif val == self.GET_LEFT:
+            access_arr = self.items_left
+
+        for item_distance in access_arr:
+            a = {"angle": idx * self.ANGLE_STEP, "distance" : item_distance}
+            front_objects.append(a)
+            idx += 1
+        
+        return front_objects
+
+    def get_all_angles(self):
+        all_objects = []  # dictionary with angle and distance of each item detected
+
+        idx = 0
+
+        range_image = self.lidar_obj.getRangeImage()
+
+        for item_distance in range_image:
+            a = {"angle": idx * self.ANGLE_STEP, "distance": item_distance}
+            all_objects.append(a)
+            idx += 1
+        return all_objects
+
+    def test_outputs(self):
+        print("FRONT ITEMS")
+        print_item_array_info(self.items_front)
+        print("BACK ITEMS")
+        print_item_array_info(self.items_back)
+        print("LEFT ITEMS")
+        print_item_array_info(self.items_left)
+        print("RIGHT ITEMS")
+        print_item_array_info(self.items_right)
+        
+        
+def print_item_array_info(arr):
+    idx = 0
+    ANGLE_STEP = 0.703125 #constant corresponding to angle difference between each lidar laser
+
+    # Print out items for objects in front 
+    for item_distance in arr:
+        degree = idx * ANGLE_STEP
+
+        conv_degree = round(degree, 2)
+        conv_distance = round(item_distance, 2)
+        # if(r < 1):
+        print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
+        idx+=1
+        
 class image_obj:
+    # Class for image object and features
     def __init__(self, x, y, color, area): 
         self.x = x 
         self.y = y
@@ -21,8 +120,6 @@ class image_obj:
         self.distance = 0
         self.angle = 0
         self.area = area
-        
-
 
 SPEED_STEP = 1.48
 P_COEFFICIENT = 0.1
@@ -70,26 +167,24 @@ black_lower_range = [0, 0, 0]
 black_higher_range = [255, 255, 40]
 
 g_touched_by_zombie = False
-
 g_last_health_at_check = 100
 
+# sets speed of each wheel
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
     for i in range(0, 4):
-    
         wheels[i].setPosition(float('inf'))
         wheels[i].setVelocity(speeds[i])
 
-# 0-10        
+# move forward helper
 def move_forward(speed, wheels = []):
     speeds = [speed*SPEED_STEP, speed*SPEED_STEP, speed*SPEED_STEP, speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
 
-# 0-10
+# move backward helped
 def move_backward(speed, wheels = []):
     speeds = [-speed*SPEED_STEP, -speed*SPEED_STEP, -speed*SPEED_STEP, -speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
 
-# 0-4
 #Speed 4 causes 5 degree turns, aka 360 in 72 timesteps
 #Speed 6 causes 6.92 degree turns, aka 360 in 53 timesteps
 #Speed 10 causes 10 degree turns, aka 360 in 36 timesteps
@@ -97,7 +192,6 @@ def turn_left(speed, wheels = []):
     speeds = [speed*SPEED_STEP, -speed*SPEED_STEP, speed*SPEED_STEP, -speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
 
-# 0-4
 def turn_right(speed, wheels = []):
     speeds = [-speed*SPEED_STEP, speed*SPEED_STEP, -speed*SPEED_STEP, speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
@@ -151,13 +245,13 @@ def go_toward_seen_berry(camera5, wheels, speed):
             chosen = choose_berry_index(berries)
             
             
-            chosen_x = berries[chosen].x;
+            chosen_x = berries[chosen].x
             BERRY_GOAL_COLOR = berries[chosen].color
             
         else: 
             matching_berries = find_same_color(berries)
             if len(matching_berries) == 1:
-                chosen_x = matching_berries[0].x;
+                chosen_x = matching_berries[0].x
             elif len(matching_berries) > 1:
                 largest_area = 0
                 berry_index = 0
@@ -172,7 +266,7 @@ def go_toward_seen_berry(camera5, wheels, speed):
             else:
                 chosen = choose_berry_index(berries)
                 
-                chosen_x = berries[chosen].x;
+                chosen_x = berries[chosen].x
                 BERRY_GOAL_COLOR = berries[chosen].color
             
         
@@ -402,17 +496,23 @@ def find_optimal_explore_angle(lidar):
     best_direction_index = 0
     largest_sum = 0
     for i in range(0, len(lidar_readings)):
-        if lidar_readings[i] == float("inf"):
-            lidar_readings[i] = 12
+        if lidar_readings[i]["distance"] == float("inf"):
+            lidar_readings[i]["distance"] = 15
+    
+    print(lidar_readings)
     for i in range(0, len(lidar_readings)):
-        cumulative_sum.append(lidar_readings[i - 2]["distance"] + lidar_readings[i - 1]["distance"] + lidar_readings[i]["distance"] + lidar_readings[(i + 1)%len(lidar_readings)]["distance"] + lidar_readings[(i + 2)%len(lidar_readings)]["distance"])
+        temp_sum = 0
+        for j in range(0, 50):
+            temp_sum = temp_sum + lidar_readings[(i - j)%len(lidar_readings)]["distance"] + lidar_readings[(i + j)%len(lidar_readings)]["distance"]
+        cumulative_sum.append(temp_sum)
     
     for i in range(0, len(cumulative_sum)):
         if cumulative_sum[i] > largest_sum:
             largest_sum = cumulative_sum[i]
             best_direction_index = i
     
-    angle = float(i) * float(360/512)
+    angle = float(best_direction_index) * float(360/512)
+    # print(cumulative_sum)
     return angle
         
 
@@ -687,7 +787,8 @@ def main():
                 g_berry_in_world = True
                 g_berry_in_world_buffer = 0
         else:
-            print(g_berry_in_world)
+            # print(g_berry_in_world)
+            pass
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -823,7 +924,7 @@ def main():
                 continue
 
             # go to berry state
-            print("go to berry", g_robot_state)
+            # print("go to berry", g_robot_state)
 
             robot_stuck(gps)
             berries = go_toward_seen_berry(camera5, wheels, 9)
@@ -842,7 +943,6 @@ def main():
                     
                     g_berry_explore = g_berry_explore + 1
                     if(g_berry_explore == 2):
-                        
                         
                         g_robot_state = Robot_State.UNIDENTIFIED
                         
@@ -866,6 +966,7 @@ def main():
                     g_berry_timer = 0
                     
                     degree_turn = find_optimal_explore_angle(lidar)
+                    print(degree_turn)
                     g_robot_state = Robot_State.EXPLORE_TURN
 
                     g_explore_steps = 60 * g_explore_fails
