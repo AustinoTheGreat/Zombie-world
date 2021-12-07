@@ -567,6 +567,7 @@ def main():
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
 
+    last_gps_location = None
     last_health = 100
     g_last_health_at_check = 100
     currently_taking_damage = False
@@ -735,10 +736,19 @@ def main():
             if g_zombie_moved_start_time == -1:
                 g_zombie_moved_start_time = 0
                 move_forward(10, wheels)
+                last_gps_location = gps.getValues()
             elif g_zombie_moved_start_time > RUNAWAY_TIME:
                 move_forward(0, wheels)
                 g_zombie_moved_start_time = -1
-                g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
+
+                cur = gps.getValues()
+                diff_X = abs(last_gps_location[0] - cur[0])
+                diff_Z = abs(last_gps_location[2] - cur[2])
+
+                if diff_X <= 0.2 and diff_Z <= 0.2:
+                    g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
+                else:
+                    g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
             else:
                 move_forward(10, wheels)
                 g_zombie_moved_start_time += 1
@@ -760,7 +770,6 @@ def main():
             if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
                                                                   robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
                 if currently_taking_damage:
-
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
                 else:
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
