@@ -623,6 +623,8 @@ def main():
 
         if not g_berry_in_world:
             g_berry_in_world = front_berries(camera5) != []
+        else:
+            print("SEEN A BERRY")
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -715,7 +717,7 @@ def main():
 
         else:
             if g_touched_by_zombie:
-                g_robot_state == Robot_State.AVOID_ZOMBIES_BRAKING
+                g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
                 print("ERROR ON CONTINUE")
