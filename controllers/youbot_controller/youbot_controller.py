@@ -299,6 +299,8 @@ def get_zombie_angle_weighted_average(zombie_locations):
     if(x == 0 or y == 0):
         return 0 #average is 0
     average = int(np.degrees(np.arctan([y/x]))[0])
+    if average < 0:
+        average = 360 - average
     print("Average " + str(average))
     return average
 
@@ -551,7 +553,7 @@ def main():
     g_zombie_turn_angle = -1
     g_zombie_moved_start_time = -1
 
-    RUNAWAY_TIME = 60
+    RUNAWAY_TIME = 40
     STOP_TIME = 3 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
@@ -723,8 +725,7 @@ def main():
                 g_zombie_moved_start_time += 1
 
         else:
-            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
-                                                                  robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
+            if g_touched_by_zombie:
                 g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
