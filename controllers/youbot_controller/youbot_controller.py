@@ -697,6 +697,9 @@ def main():
                 g_zombie_moved_start_time += 1
 
         else:
+            if g_touched_by_zombie:
+                g_robot_state == Robot_State.AVOID_ZOMBIES_BRAKING
+                continue
             # go to berry state
             print("go to berry", g_robot_state)
 
