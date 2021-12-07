@@ -397,8 +397,26 @@ def avoid_zombie(lidar, robot_info):
 
 def find_optimal_explore_angle(lidar):
     # 512
-    lidar_readings = lidar.items_front + lidar.items_right + lidar.items_back + lidar.items_left
-    return
+    lidar_readings = lidar.getRangeImage()
+    cumulative_sum = [] * len(lidar_readings)
+    best_direction_index = 0
+    largest_sum = 0
+
+    for i in range(0, len(lidar_readings)):
+        if lidar_readings[i] == float(inf):
+            lidar_readings[i] = 12
+    for i in range(0, len(lidar_readings)):
+        cumulative_sum[i] = lidar_readings[i - 2] + lidar_readings[i - 1] + lidar_readings[i] + lidar_readings[i + 1] + lidar_readings[i + 2]
+    
+    for i in range(0, len(cumulative_sum)):
+        if cumulative_sum > largest_sum:
+            largest_sum = cumulative_sum
+            best_direction_index = i
+    
+    angle = float(i) * float(360/512)
+    return angle
+        
+
     
 
 
@@ -824,7 +842,7 @@ def main():
                 elif (berries):
                     
                     g_berry_explore = g_berry_explore + 1
-                    if(g_berry_explore == 4):
+                    if(g_berry_explore == 2):
                         
                         
                         g_robot_state = Robot_State.UNIDENTIFIED
