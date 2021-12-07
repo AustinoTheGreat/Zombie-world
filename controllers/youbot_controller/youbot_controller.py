@@ -374,7 +374,22 @@ def avoid_zombie(lidar, robot_info):
 
 
 
+def clear_berry_var():
+    global g_GPS_timer
+    global g_turn_timer
+    global g_berry_seen
+    global g_berry_timer
+    global g_explore_steps
+    global g_explore_fails
 
+    g_GPS_timer = 0
+    g_turn_timer = 0
+    g_berry_seen = 0
+    g_berry_timer = 0
+    g_explore_steps = 0
+    g_explore_fails = 1
+    
+    return
 
 
 
