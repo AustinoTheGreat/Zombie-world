@@ -25,6 +25,7 @@ class Robot_State:
     AIM_BERRY = 2
     STEPBRO = 3
     SPIN = 4
+    EXPLORE = 5
     
     
 class Object_Id:
