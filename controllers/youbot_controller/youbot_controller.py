@@ -147,8 +147,9 @@ def go_toward_seen_berry(camera5, wheels, speed):
         chosen_x = 0
         
         if (BERRY_GOAL_COLOR == ""):
-            # Choose which berry color is best
-            chosen = 0;
+            
+            chosen = choose_berry_index(berries)
+            
             
             chosen_x = berries[chosen].x;
             BERRY_GOAL_COLOR = berries[chosen].color
@@ -169,8 +170,7 @@ def go_toward_seen_berry(camera5, wheels, speed):
                 chosen_x = matching_berries[berry_index].x
                     
             else:
-                # Choose which berry color is best
-                chosen = 0;
+                chosen = choose_berry_index(berries)
                 
                 chosen_x = berries[chosen].x;
                 BERRY_GOAL_COLOR = berries[chosen].color
@@ -199,6 +199,7 @@ def front_berries(camera):
     pink = get_img_obj(img, pink_lower_range, pink_higher_range, "pink")
     yellow = get_img_obj(img, yellow_lower_range, yellow_higher_range, "yellow")
     
+    
     berries = red + orange + pink + yellow
     return berries
 
@@ -210,6 +211,15 @@ def find_same_color(berries = [], *args):
             matching_berries.append(item)
     return matching_berries
     
+def choose_berry_index(berries = []):
+    area = 0
+    largest_area_index = 0
+    for i in range(0, len(berries)):
+        if berries[i].area > area:
+            area = berries[i].area
+            largest_area_index = i
+    return largest_area_index
+            
 
 def robot_stuck(gps):
     
@@ -385,6 +395,11 @@ def avoid_zombie(lidar, robot_info):
         return -1
 
 
+def find_optimal_explore_angle(lidar):
+    # 512
+    lidar_readings = lidar.items_front + lidar.items_right + lidar.items_back + lidar.items_left
+    return
+    
 
 
 def clear_berry_var():
@@ -566,7 +581,7 @@ def main():
     RUNAWAY_TIME = 40
     BACKTRACK_TIME = 30 #Time to reverse away from zombie
     STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
-    ENERGY_MIN = 40 #When to start looking for berries
+    ENERGY_MIN = 60 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
 
     last_gps_location = None
@@ -811,7 +826,7 @@ def main():
                     g_berry_explore = g_berry_explore + 1
                     if(g_berry_explore == 4):
                         
-                
+                        
                         g_robot_state = Robot_State.UNIDENTIFIED
                         
                         g_berry_timer = 0
@@ -828,8 +843,14 @@ def main():
             
                 g_berry_timer = g_berry_timer + 1
                 turn_left(6, wheels)
+                
+                
                 if g_berry_timer == 30:
                     g_berry_timer = 0
+                    
+                    optimal_explore_angle = find_optimal_explore_angle(lidar)
+                    
+                    
                     g_robot_state = Robot_State.EXPLORE
                     g_explore_steps = 60 * g_explore_fails
                     
