@@ -655,8 +655,11 @@ def main():
             if g_robot_state == Robot_State.EXPLORE and g_berry_timer > 30:
                 # exploration state
                 move_backward(10, wheels)
+                
                 if (robot_stuck(gps) == True):
                     g_berry_timer = 0
+                elif (berries):
+                    g_robot_state = Robot_State.UNIDENTIFIED
                 
             elif (berries == []):
             
