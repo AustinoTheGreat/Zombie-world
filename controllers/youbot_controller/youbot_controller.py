@@ -301,6 +301,8 @@ def get_zombie_angle_weighted_average(zombie_locations):
     average = int(np.degrees(np.arctan([y/x]))[0])
     if average < 0:
         average = 360 - average
+    if average > 360:
+        average = average - 360
     print("Average " + str(average))
     return average
 
