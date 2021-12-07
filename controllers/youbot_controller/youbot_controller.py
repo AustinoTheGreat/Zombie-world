@@ -698,11 +698,12 @@ def main():
             print("avoiding zombies detection")
             move_forward(0, wheels)
             g_zombie_turn_angle = avoid_zombie(lidar, robot_info)
-            if g_zombie_turn_angle >= 0:
-                g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
-            elif g_berry_in_world and (robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN):
+
+            if g_berry_in_world and (robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN):
                 print("Exiting robot avoid zombie state")
                 g_robot_state = Robot_State.UNIDENTIFIED
+            elif g_zombie_turn_angle >= 0:
+                g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
@@ -731,7 +732,8 @@ def main():
                 g_zombie_moved_start_time += 1
 
         else:
-            if g_touched_by_zombie:
+            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
+                                                                  robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
                 g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
