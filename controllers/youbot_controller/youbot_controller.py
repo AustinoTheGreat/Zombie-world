@@ -220,7 +220,7 @@ def robot_stuck(gps):
             g_robot_state = Robot_State.UNIDENTIFIED
             return False
             
-def stump_size(camera):
+def stump_size(camera, size):
     img = camera.getImageArray()
     img = np.asarray(img, dtype=np.uint8)
     img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
@@ -230,7 +230,7 @@ def stump_size(camera):
     # largest_contour = max(contours, key=cv2.contourArea)
     # largest_contour_center = cv2.moments(largest_contour)
     if (len(black) != 0):
-        if (black[0].area > 1000):
+        if (black[0].area > size):
             return True
         else:
             return False
@@ -436,7 +436,7 @@ def main():
             print("GOING FORWARD")
             move_backward(4, wheels)
             forward_buffer_length-=1
-            if(forward_buffer_length == 1 and stump_size(camera5) == True):
+            if(forward_buffer_length == 1 and stump_size(camera5, 1000) == True):
             
                 
                 print("start turn")
@@ -465,10 +465,10 @@ def main():
             else:
                 pass
         
-        # Intiiate moving forward every time a berry goes out of view(is consumed/ out of view from stump)
-        if(prev_num_berries and berries == []):# berry was captured
-            print("BERRY CAPTURED?!")
-            forward_buffer_length  += 4 #move forward for 20 timesteps
+        # Intiiate moving forward every time a berry goes out of view and stump is present
+        if(prev_num_berries and berries == [] and stump_size(camera5, 700) == True):# berry was captured
+            print("Initiate get berry from stump")
+            forward_buffer_length  += 4 #move forward for 4 timesteps
             continue
 
 
