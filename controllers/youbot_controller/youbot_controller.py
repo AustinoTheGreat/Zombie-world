@@ -279,7 +279,6 @@ def get_zombie_locations(old_frame, new_frame):
                 zombie_locations.append(old_frame[i])
                 print("Old: " + str(old_frame[i]["angle"]) + " " + str(old_frame[i]["distance"]) + " New: "
                       + str(new_frame[i]["angle"]) + " " + str(new_frame[i]["distance"]))
-
     return zombie_locations
 
 # Does not work
@@ -292,7 +291,14 @@ def get_zombie_angle_weighted_average(zombie_locations):
         weights.append(abs(z["distance"] - 10))
         #weights.append(1)
         print("Zombie Location: " + str(z["angle"]) + " Distance " + str(z["distance"]))
-    average = np.average(angles, weights=weights)
+        angles_rad = np.radians(angles)
+    x = y = 0
+    for i in range(len(angles_rad)):
+        x += weights[i] * np.cos(angles_rad[i])
+        y += weights[i] * np.sin(angles_rad[i])
+    if(x == 0 or y == 0):
+        return 0 #average is 0
+    average = int(np.degrees(np.arctan([y/x]))[0])
     print("Average " + str(average))
     return average
 
