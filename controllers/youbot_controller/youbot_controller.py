@@ -770,7 +770,7 @@ def main():
 
 
         elif g_robot_state == Robot_State.EXPLORE_TURN:
-            print("turning to avoid zombie")
+            print("turning to explore")
             if degree_turn > 355 or degree_turn < 5:
                 g_robot_state = Robot_State.EXPLORE
             else:
