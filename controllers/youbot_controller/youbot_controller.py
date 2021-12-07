@@ -38,6 +38,7 @@ g_berry_timer = 0
 g_explore_steps = 0
 g_explore_fails = 1
 g_berry_in_world_buffer = 0
+g_berry_explore = 0
 g_berry_in_world = False
 
 # Color ranges for zombies and berries, HSV
@@ -393,6 +394,7 @@ def clear_berry_var():
     global g_berry_timer
     global g_explore_steps
     global g_explore_fails
+    global g_berry_explore
 
     g_GPS_timer = 0
     g_turn_timer = 0
@@ -400,6 +402,7 @@ def clear_berry_var():
     g_berry_timer = 0
     g_explore_steps = 0
     g_explore_fails = 1
+    g_berry_explore = 0
     
     return
 
@@ -443,6 +446,8 @@ def main():
     global g_touched_by_zombie
     global g_last_health_at_check
     global g_berry_in_world
+    global g_berry_in_world_buffer
+    global g_berry_explore
 
     
     # Berry out of sight sequence constants
@@ -635,11 +640,14 @@ def main():
 
         if not g_berry_in_world:
             if(front_berries(camera5) != []):
-                g_berry_in_world = g_berry_in_world + 1
-            if(g_berry_in_world == 4):
+                g_berry_in_world_buffer = g_berry_in_world_buffer + 1
+            else:
+                g_berry_in_world_buffer = 0
+            if(g_berry_in_world_buffer == 4):
                 g_berry_in_world = True
+                g_berry_in_world_buffer = 0
         else:
-            print("SEEN A BERRY")
+            print(g_berry_in_world)
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -698,12 +706,11 @@ def main():
             print("avoiding zombies detection")
             move_forward(0, wheels)
             g_zombie_turn_angle = avoid_zombie(lidar, robot_info)
-
-            if g_berry_in_world and (robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN):
+            if g_zombie_turn_angle >= 0:
+                g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
+            elif g_berry_in_world and (robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN):
                 print("Exiting robot avoid zombie state")
                 g_robot_state = Robot_State.UNIDENTIFIED
-            elif g_zombie_turn_angle >= 0:
-                g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
@@ -732,8 +739,7 @@ def main():
                 g_zombie_moved_start_time += 1
 
         else:
-            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
-                                                                  robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
+            if g_touched_by_zombie:
                 g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
@@ -752,17 +758,25 @@ def main():
                 move_backward(10, wheels)
                 
                 if (robot_stuck(gps) == True):
+                    g_berry_explore = 0
                     g_berry_timer = 0
                 elif (berries):
-                    g_robot_state = Robot_State.UNIDENTIFIED
                     
-                    g_berry_timer = 0
-                    g_explore_steps = 0
-                    q_explore_fails = 1
+                    g_berry_explore = g_berry_explore + 1
+                    if(g_berry_explore == 4):
+                        
+                
+                        g_robot_state = Robot_State.UNIDENTIFIED
+                        
+                        g_berry_timer = 0
+                        g_explore_steps = 0
+                        q_explore_fails = 1
                     
                 elif g_explore_steps == 0:
+                    g_berry_explore = 0
                     g_robot_state = Robot_State.UNIDENTIFIED
                     g_explore_fails = g_explore_fails + 1
+                
                 
             elif (berries == []):
             
