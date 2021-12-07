@@ -562,7 +562,7 @@ def main():
     g_zombie_moved_start_time = -1
 
     degree_turn = -1
-    
+
     RUNAWAY_TIME = 40
     BACKTRACK_TIME = 30 #Time to reverse away from zombie
     STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
@@ -770,8 +770,16 @@ def main():
 
 
         elif g_robot_state == Robot_State.EXPLORE_TURN:
-            pass
-
+            print("turning to avoid zombie")
+            if degree_turn > 355 or degree_turn < 5:
+                g_robot_state = Robot_State.EXPLORE
+            else:
+                if degree_turn > 180:
+                    degree_turn += 6.92
+                    turn_left(6, wheels)
+                else:
+                    degree_turn -= 6.92
+                    turn_right(6, wheels)
         else:
             if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
                                                                   robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
