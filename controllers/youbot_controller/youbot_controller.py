@@ -866,10 +866,9 @@ def main():
                 if g_berry_timer == 30:
                     g_berry_timer = 0
                     
-                    optimal_explore_angle = find_optimal_explore_angle(lidar)
-                    
-                    
-                    g_robot_state = Robot_State.EXPLORE
+                    degree_turn = find_optimal_explore_angle(lidar)
+                    g_robot_state = Robot_State.EXPLORE_TURN
+]
                     g_explore_steps = 60 * g_explore_fails
                     
             else:
