@@ -430,6 +430,7 @@ def main():
     global g_explore_fails
     global g_touched_by_zombie
     global g_last_health_at_check
+    global g_berry_in_world
 
     
     # Berry out of sight sequence constants
@@ -546,9 +547,8 @@ def main():
     RUNAWAY_TIME = 40
     STOP_TIME = 3 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
-    HEALTH_MIN = 60 #When to start lloking for berries
+    HEALTH_MIN = 80 #When to start lloking for berries
 
-    g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
     last_health = 100
     g_last_health_at_check = 100
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
@@ -616,11 +616,13 @@ def main():
         # Check if we've been touched by a zombie before
         if robot_info[0] < last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
             g_touched_by_zombie = True
-            
-            
+
         last_health = robot_info[0]
         if(timer%16==0):
             g_last_health_at_check = robot_info[0]
+
+        if not g_berry_in_world:
+            g_berry_in_world = front_berries(camera5) != []
         
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
@@ -681,9 +683,9 @@ def main():
             g_zombie_turn_angle = avoid_zombie(lidar, robot_info)
             if g_zombie_turn_angle >= 0:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_TURN
-            # elif robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN:
-                # print("Exiting robot avoid zombie state")
-                # g_robot_state = Robot_State.UNIDENTIFIED
+            elif g_berry_in_world and (robot_info[1] < ENERGY_MIN or robot_info[0] < HEALTH_MIN):
+                print("Exiting robot avoid zombie state")
+                g_robot_state = Robot_State.UNIDENTIFIED
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
@@ -714,7 +716,9 @@ def main():
         else:
             if g_touched_by_zombie:
                 g_robot_state == Robot_State.AVOID_ZOMBIES_BRAKING
+                clear_berry_var()
                 continue
+                print("ERROR ON CONTINUE")
             # go to berry state
             print("go to berry", g_robot_state)
 
