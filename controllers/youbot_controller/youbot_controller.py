@@ -43,7 +43,7 @@ g_berry_in_world = False
 red_lower_range = [110, 150, 0]
 red_higher_range = [130, 230, 255]
 
-orange_lower_range = [100, 100, 0]
+orange_lower_range = [100, 110, 0]
 orange_higher_range = [120, 150, 255]
 
 yellow_lower_range = [70, 150, 0]
