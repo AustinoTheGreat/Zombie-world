@@ -26,6 +26,9 @@ class Robot_State:
     STEPBRO = 3
     SPIN = 4
     EXPLORE = 5
+    AVOID_ZOMBIE_TURN = 6
+    AVOID_ZOMBIE_MOVE = 7
+    AVOID_ZOMBIES_BRAKING= 8
     
     
 class Object_Id:
