@@ -280,7 +280,6 @@ def get_zombie_locations(old_frame, new_frame):
                 zombie_locations.append(old_frame[i])
                 print("Old: " + str(old_frame[i]["angle"]) + " " + str(old_frame[i]["distance"]) + " New: "
                       + str(new_frame[i]["angle"]) + " " + str(new_frame[i]["distance"]))
-
     return zombie_locations
 
 # Does not work
@@ -293,7 +292,18 @@ def get_zombie_angle_weighted_average(zombie_locations):
         weights.append(abs(z["distance"] - 10))
         #weights.append(1)
         print("Zombie Location: " + str(z["angle"]) + " Distance " + str(z["distance"]))
-    average = np.average(angles, weights=weights)
+        angles_rad = np.radians(angles)
+    x = y = 0
+    for i in range(len(angles_rad)):
+        x += weights[i] * np.cos(angles_rad[i])
+        y += weights[i] * np.sin(angles_rad[i])
+    if(x == 0 or y == 0):
+        return 0 #average is 0
+    average = int(np.degrees(np.arctan([y/x]))[0])
+    if average < 0:
+        average = 360 - average
+    if average > 360:
+        average = average - 360
     print("Average " + str(average))
     return average
 
@@ -340,7 +350,7 @@ def avoid_zombie(lidar, robot_info):
     lidar.recalculate()
     curr_frame = lidar.get_all_angles()
     g_lidar_sensor_values.append(curr_frame)
-    print("HEALTH INFO", str(g_last_health), "<", str(robot_info[0]), "+ 1 or", str(g_last_health_at_check))
+    print("HEALTH INFO", str(robot_info[0]), "<", str(g_last_health), "- 1 or", str(g_last_health_at_check))
 
     if len(g_lidar_sensor_values) >= SIG_FRAMES:
         first_frame = g_lidar_sensor_values.pop(0)
@@ -355,19 +365,20 @@ def avoid_zombie(lidar, robot_info):
             return g_zombie_turn_angle
             # TURN AND STATE CHANGE
 
-        elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
-            print("TOUCHED")
-            g_touched_by_zombie = True
-            g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
-            g_last_health = 0
-            g_lidar_sensor_values = list()
-
-            return g_zombie_turn_angle
-            # TURN AND STATE CHANGE
-
         else:
             g_last_health = robot_info[0]
             return -1
+
+    elif robot_info[0] < g_last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
+        print("TOUCHED")
+        g_touched_by_zombie = True
+        g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
+        g_last_health = 0
+        g_lidar_sensor_values = list()
+
+        return g_zombie_turn_angle
+        # TURN AND STATE CHANGE
+    
     else:
         g_last_health = robot_info[0]
         return -1
@@ -545,8 +556,8 @@ def main():
     g_zombie_turn_angle = -1
     g_zombie_moved_start_time = -1
 
-    RUNAWAY_TIME = 40
-    STOP_TIME = 3 #Time it takes the the robot to come to a complete halt
+    RUNAWAY_TIME = 60
+    STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
 
