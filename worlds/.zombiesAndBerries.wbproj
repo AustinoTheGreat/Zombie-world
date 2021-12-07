@@ -5,12 +5,13 @@ sceneTreePerspectives: 000000ff0000000100000002000000c0000000fc01000000020100000
 maximizedDockId: -1
 centralWidgetVisible: 1
 orthographicViewHeight: 1
-textFiles: 1 "controllers/youbot_controller/youbot_controller.py" "controllers/youbot_controller/world_info_structure.py"
+textFiles: 0 "controllers/youbot_controller/youbot_controller.py" "controllers/youbot_controller/world_info_structure.py"
+globalOptionalRendering: LidarPointClouds::LidarRaysPaths
 consoles: Console:All:All
-renderingDevicePerspectives: youBot:BackHighRes;1;1;0;0
+renderingDevicePerspectives: youBot:BackHighRes;0;1;0;0
 renderingDevicePerspectives: youBot:BackLowRes;1;1;0;0
 renderingDevicePerspectives: youBot:ForwardHighRes;1;1;0;0
-renderingDevicePerspectives: youBot:ForwardHighResSmall;1;1;0;0
+renderingDevicePerspectives: youBot:ForwardHighResSmall;0;1;0;0
 renderingDevicePerspectives: youBot:ForwardHighResSmallFov;1;1;0;0
 renderingDevicePerspectives: youBot:ForwardLowResBigFov;1;1;0;0
 renderingDevicePerspectives: youBot:LeftLowRes;1;1;0;0

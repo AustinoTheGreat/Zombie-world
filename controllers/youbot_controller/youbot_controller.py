@@ -23,6 +23,7 @@ class image_obj:
         self.area = area
         
 
+
 SPEED_STEP = 1.48
 P_COEFFICIENT = 0.1
 
@@ -81,6 +82,9 @@ def move_backward(speed, wheels = []):
     base_set_wheel_speed_helper(speeds, wheels)
 
 # 0-4
+#Speed 4 causes 5 degree turns, aka 360 in 72 timesteps
+#Speed 6 causes 6.92 degree turns, aka 360 in 53 timesteps
+#Speed 10 causes 10 degree turns, aka 360 in 36 timesteps
 def turn_left(speed, wheels = []):
     speeds = [speed*SPEED_STEP, -speed*SPEED_STEP, speed*SPEED_STEP, -speed*SPEED_STEP]
     base_set_wheel_speed_helper(speeds, wheels)
@@ -243,6 +247,127 @@ def stump_size(camera, size):
             return False
             
         
+
+
+# The number of cycles before we attempt to identify
+SIG_FRAMES = 100
+SIG_DISTANCE = 1
+g_lidar_sensor_values = list()
+
+def get_zombie_locations(old_frame, new_frame):
+    """Finds all zombie locations, angles where the frame has changed by 0.5 meters"""
+    zombie_locations = []
+    for i in range(len(old_frame)):
+        if (old_frame[i]["distance"] != 0 and
+                old_frame[i]["distance"] != float("inf") and
+                new_frame[i]["distance"] != 0 and
+                new_frame[i]["distance"] != float("inf") and
+                old_frame[i]["distance"] > new_frame[i]["distance"] + SIG_DISTANCE):
+                
+            if (old_frame[i + 1]["distance"] > new_frame[i + 1]["distance"] + SIG_DISTANCE or
+                    old_frame[i - 1]["distance"] > new_frame[i - 1]["distance"] + SIG_DISTANCE):
+                    
+                zombie_locations.append(old_frame[i])
+                print("Old: " + str(old_frame[i]["angle"]) + " " + str(old_frame[i]["distance"]) + " New: "
+                      + str(new_frame[i]["angle"]) + " " + str(new_frame[i]["distance"]))
+
+    return zombie_locations
+
+# Does not work
+def get_zombie_angle_weighted_average(zombie_locations):
+    """Finds the center of location of the zombies, using the angles as values an distances as weights"""
+    angles = []
+    weights = []
+    for z in zombie_locations:
+        angles.append(z["angle"])
+        weights.append(abs(z["distance"] - 10))
+        #weights.append(1)
+        print("Zombie Location: " + str(z["angle"]) + " Distance " + str(z["distance"]))
+    average = np.average(angles, weights=weights)
+    print("Average " + str(average))
+    return average
+
+
+def find_optimum_move_location(frame, bias):
+    """Finds the optimum move location, starting from opposite of where the zombie is"""
+
+    start_i = int(bias / Lidar_Info.ANGLE_STEP)
+
+    for i in range(int(len(frame) / 2)):
+        if frame[(start_i - i) % len(frame)]["distance"] == float("inf"):
+            return frame[(start_i - i) % len(frame)]["angle"]
+        elif frame[(start_i + i) % len(frame)]["distance"] == float("inf"):
+            return frame[(start_i + i) % len(frame)]["angle"]
+
+    for i in range(len(frame) / 2):
+        if frame[(start_i - i) % len(frame)]["distance"] > 3:
+            return frame[(start_i - i) % len(frame)]["angle"]
+        elif frame[(start_i + i) % len(frame)]["distance"] > 3:
+            return frame[(start_i + i) % len(frame)]["angle"]
+
+    return bias
+
+
+g_zombie_turn_angle = 0
+g_last_health = 0
+
+def avoid_zombie(lidar, robot_info):
+    """Detect whether there is a zombie(s) and calculates the optimal routes
+    When there is only 1 zombie, we move 180 to it. When there is 1 or more, 
+    we take a weighted average distance. Arm also MUST BE COMPLETELY UP"""
+    global g_last_health
+    global g_zombie_turn_angle
+    global g_lidar_sensor_values
+
+    if not g_last_health or not g_last_health > 0:
+        g_last_health = robot_info[0]
+
+    # We must assume that the robot is not moving
+    speed = 0
+
+    if speed == 0:
+        lidar.recalculate()
+        curr_frame = lidar.get_all_angles()
+        g_lidar_sensor_values.append(curr_frame)
+
+        if len(g_lidar_sensor_values) >= SIG_FRAMES:
+            first_frame = g_lidar_sensor_values.pop(0)
+            zombie_locations = get_zombie_locations(first_frame, curr_frame)
+            if zombie_locations:
+                zombie_weigted_center = get_zombie_angle_weighted_average(zombie_locations)
+                bias_center = (zombie_weigted_center + 180.0) % 360
+                print("bias center " + str(bias_center))
+                g_zombie_turn_angle = find_optimum_move_location(curr_frame, bias_center)
+                g_last_health = 0
+                g_lidar_sensor_values = list()
+
+
+                # TURN AND STATE CHANGE
+
+            elif g_last_health > robot_info[0] + 2:
+                g_zombie_turn_angle = find_optimum_move_location(curr_frame, 0.0)
+                g_last_health = 0
+                g_lidar_sensor_values = list()
+
+                # TURN AND STATE CHANGE
+
+            else:
+                g_last_health = robot_info[0]
+    else:
+        #speed not zero exist state
+        pass
+
+
+
+
+
+
+
+
+
+
+    
+    
         
 
 #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
@@ -532,10 +657,10 @@ def main():
         # print_item_array_info(lidar.items_right)
         
         # Arm Extending in the direction of Kuka back(direction of camera )
-        arm1.setPosition(0)
-        arm2.setPosition(-1.13)
-        arm3.setPosition(-.60)
-        arm4.setPosition(0)
+        # arm1.setPosition(0)
+        # arm2.setPosition(-1.13)
+        # arm3.setPosition(-.5)
+        # arm4.setPosition(0)
 
         # Arm Extending Towards Kuka front
         # arm1.setPosition(0)
