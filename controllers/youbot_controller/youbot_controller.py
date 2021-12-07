@@ -490,7 +490,7 @@ def main():
             
                 g_berry_timer = g_berry_timer + 1
                 turn_left(6, wheels)
-                if g_berry_timer == 40:
+                if g_berry_timer == 30:
                     g_robot_state = Robot_State.EXPLORE
             else:
                 g_berry_timer = 0
