@@ -665,7 +665,7 @@ def main():
                 # Arm Extending in the direction of Kuka back(direction of camera )
                 arm1.setPosition(0)
                 arm2.setPosition(-1.13)
-                arm3.setPosition(-.5)
+                arm3.setPosition(-.66)
                 arm4.setPosition(0)
                 
                 print("start turn")
