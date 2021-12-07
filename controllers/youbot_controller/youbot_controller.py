@@ -4,8 +4,6 @@ from controller import Robot, Motor, Camera, Accelerometer, GPS, Gyro, LightSens
 from controller import Supervisor
 
 from youbot_zombie import *
-#TODO: REMOVE BEFORE SUMBITTING, COPY ALL CODE INTO THIS FILE!!!!
-from world_info_structure import * 
    
 #------------------CHANGE CODE BELOW HERE ONLY--------------------------
 #define functions here for making decisions and using sensor inputs
@@ -203,24 +201,21 @@ def get_image_from_camera(camera):
     - convert to RGB format (from BGRA), and
     - rotate & flip to match the actual image.
     """
+
     img = camera.getImageArray()
     img = np.asarray(img, dtype=np.uint8)
     img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
     return cv2.flip(img, 1)
 
-def get_img_obj(img, lower_range, higher_range, color):
 
+def get_img_obj(img, lower_range, higher_range, color):
+    """Get an array of image objects detected in HSV color range"""
     objs = []
     mask = cv2.inRange(img, np.array(lower_range), np.array(higher_range))
-    # if color == "black":
-        # mask = 255 - mask
     
     # Find segmented contours and their center
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    # largest_contour = max(contours, key=cv2.contourArea)
-    # largest_contour_center = cv2.moments(largest_contour)
     
     for item in contours:
         center = cv2.moments(item)
@@ -232,6 +227,7 @@ def get_img_obj(img, lower_range, higher_range, color):
     return objs   
     
 def go_toward_seen_berry(camera5, wheels, speed):
+    """Choose and go towards a berry in FOV"""
     global BERRY_GOAL_COLOR
     global g_explore_fails
     
@@ -239,37 +235,32 @@ def go_toward_seen_berry(camera5, wheels, speed):
     
     if (len(berries) != 0):
         chosen_x = 0
-        
         if (BERRY_GOAL_COLOR == ""):
-            
+            # choose new berry target, largest ones take priority
             chosen = choose_berry_index(berries)
-            
-            
             chosen_x = berries[chosen].x
-            BERRY_GOAL_COLOR = berries[chosen].color
-            
+            BERRY_GOAL_COLOR = berries[chosen].color  
         else: 
+            # find matching color to previous timestep berry
             matching_berries = find_same_color(berries)
             if len(matching_berries) == 1:
                 chosen_x = matching_berries[0].x
             elif len(matching_berries) > 1:
+                # choose largest berry
                 largest_area = 0
                 berry_index = 0
                 for i in range(0, len(matching_berries)):
                     if matching_berries[i].area > largest_area:
                         largest_area = matching_berries[i].area
                         berry_index = i
-                        
-                
                 chosen_x = matching_berries[berry_index].x
                     
             else:
                 chosen = choose_berry_index(berries)
-                
                 chosen_x = berries[chosen].x
                 BERRY_GOAL_COLOR = berries[chosen].color
             
-        
+        # calculate wheel speed to aim at berry
         error = camera5.getWidth() / 2 - chosen_x
         speeds = [0, 0, 0, 0]
         speeds[1] = -error * P_COEFFICIENT - speed * SPEED_STEP
@@ -285,6 +276,7 @@ def go_toward_seen_berry(camera5, wheels, speed):
     
      
 def front_berries(camera):
+    """get a list of all berries in camera FOV"""
     img = get_image_from_camera(camera)
     img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
     
@@ -298,6 +290,7 @@ def front_berries(camera):
     return berries
 
 def find_same_color(berries = [], *args):
+    """return matching berries"""
     global BERRY_GOAL_COLOR
     matching_berries = []
     for item in berries:
@@ -306,6 +299,7 @@ def find_same_color(berries = [], *args):
     return matching_berries
     
 def choose_berry_index(berries = []):
+    """choose largest berry"""
     area = 0
     largest_area_index = 0
     for i in range(0, len(berries)):
@@ -316,6 +310,7 @@ def choose_berry_index(berries = []):
             
 
 def robot_stuck(gps):
+    """get out of stucked situations, called by to enter stuck state"""
     
     global g_GPS_timer
     global g_GPS
@@ -324,11 +319,11 @@ def robot_stuck(gps):
     g_GPS_timer = g_GPS_timer + 1
     
     if (g_GPS_timer < 50):
-        if g_robot_state == Robot_State.STEPBRO:
+        if g_robot_state == Robot_State.STEPBRO: #Stucked
             g_robot_state = Robot_State.UNIDENTIFIED
         return False
     elif (g_GPS_timer == 50):
-        
+        # check if moved
         g_GPS_timer = 0
         cur = gps.getValues()
         diff_X = abs(g_GPS[0] - cur[0])
@@ -347,23 +342,18 @@ def robot_stuck(gps):
             return False
             
 def stump_size(camera, size):
+    """check for stump in camera FOV and size"""
     img = camera.getImageArray()
     img = np.asarray(img, dtype=np.uint8)
     img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
     img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
     black = get_img_obj(img, black_lower_range, black_higher_range, "black")
-    
-    # largest_contour = max(contours, key=cv2.contourArea)
-    # largest_contour_center = cv2.moments(largest_contour)
     if (len(black) != 0):
         if (black[0].area > size):
             return True
         else:
             return False
             
-        
-
-
 # The number of cycles before we attempt to identify
 SIG_FRAMES = 100
 SIG_DISTANCE = 1
@@ -490,7 +480,7 @@ def avoid_zombie(lidar, robot_info):
 
 
 def find_optimal_explore_angle(lidar):
-    # 512
+    """find optimal angle for exploration state"""
     lidar_readings = lidar.get_all_angles()
     cumulative_sum = []
     best_direction_index = 0
@@ -499,27 +489,22 @@ def find_optimal_explore_angle(lidar):
         if lidar_readings[i]["distance"] == float("inf"):
             lidar_readings[i]["distance"] = 15
     
-    print(lidar_readings)
     for i in range(0, len(lidar_readings)):
         temp_sum = 0
         for j in range(0, 50):
             temp_sum = temp_sum + lidar_readings[(i - j)%len(lidar_readings)]["distance"] + lidar_readings[(i + j)%len(lidar_readings)]["distance"]
         cumulative_sum.append(temp_sum)
-    
+    #choose most empty
     for i in range(0, len(cumulative_sum)):
         if cumulative_sum[i] > largest_sum:
             largest_sum = cumulative_sum[i]
             best_direction_index = i
     
     angle = float(best_direction_index) * float(360/512)
-    # print(cumulative_sum)
     return angle
-        
-
-    
-
 
 def clear_berry_var():
+    """for state transition between finding berry and avoiding zombies"""
     global g_GPS_timer
     global g_turn_timer
     global g_berry_seen
@@ -535,7 +520,6 @@ def clear_berry_var():
     g_explore_steps = 0
     g_explore_fails = 1
     g_berry_explore = 0
-    
     return
 
 
@@ -656,8 +640,9 @@ def main():
     # br.setPosition(float('inf'))
     # bl.setPosition(float('inf'))
     
-    # TODO: MOVE THIS SOMEWHERE ELSE LOL
+    
     def print_item_array_info(arr):
+        """test lidar directional array info"""
         idx = 0
         ANGLE_STEP = 0.703125 #constant corresponding to angle difference between each lidar laser
 
@@ -671,17 +656,6 @@ def main():
             print(idx, " Angle", conv_degree , ",Ditance: "  , conv_distance)
             idx+=1
         
-    def sum_ignore_inf(arr):
-        sum = 0
-        positive_infinity = float('inf')
-        for i in arr:
-            if i != positive_infinity:
-                sum+=i
-            else:
-                sum+=15 # magic number for getting sense of which side is free
-        return sum
-
-
     i=0
     
     # Berry movement sequence constants
@@ -778,6 +752,7 @@ def main():
         if(timer%16==0):
             g_last_health_at_check = robot_info[0]
 
+        # check if we have seen a berry in the world before
         if not g_berry_in_world:
             if(front_berries(camera5) != []):
                 g_berry_in_world_buffer = g_berry_in_world_buffer + 1
@@ -787,9 +762,9 @@ def main():
                 g_berry_in_world = True
                 g_berry_in_world_buffer = 0
         else:
-            # print(g_berry_in_world)
             pass
         
+        # refer to documentation for logic of state transitions below
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
         # stucked state
             g_berry_timer = 0
@@ -819,8 +794,6 @@ def main():
             
                 prev_num_berries = 0
             continue
-        
-        
         elif g_robot_state == Robot_State.SPIN and g_turn_timer > 0:
             # spin state, used for knocking berry off of stump
             print("turned")
@@ -901,7 +874,6 @@ def main():
                 g_zombie_moved_start_time += 1
                 move_forward(10, wheels)
 
-
         elif g_robot_state == Robot_State.EXPLORE_TURN:
             print("turning to explore")
             if degree_turn > 355 or degree_turn < 5:
@@ -922,55 +894,35 @@ def main():
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
-
-            # go to berry state
-            # print("go to berry", g_robot_state)
-
+            # berry state
             robot_stuck(gps)
             berries = go_toward_seen_berry(camera5, wheels, 9)
-                
-            
             if g_robot_state == Robot_State.EXPLORE and g_explore_steps > 0:
                 # exploration state
-                
                 g_explore_steps = g_explore_steps - 1
                 move_backward(10, wheels)
-                
                 if (robot_stuck(gps) == True):
                     g_berry_explore = 0
                     g_berry_timer = 0
                 elif (berries):
-                    
                     g_berry_explore = g_berry_explore + 1
                     if(g_berry_explore == 2):
-                        
                         g_robot_state = Robot_State.UNIDENTIFIED
-                        
                         g_berry_timer = 0
                         g_explore_steps = 0
                         q_explore_fails = 1
-                    
                 elif g_explore_steps == 0:
                     g_berry_explore = 0
                     g_robot_state = Robot_State.UNIDENTIFIED
-                    g_explore_fails = g_explore_fails + 1
-                
-                
+                    g_explore_fails = g_explore_fails + 1                
             elif (berries == []):
-            
                 g_berry_timer = g_berry_timer + 1
                 turn_left(6, wheels)
-                
-                
                 if g_berry_timer == 30:
                     g_berry_timer = 0
-                    
                     degree_turn = find_optimal_explore_angle(lidar)
-                    print(degree_turn)
                     g_robot_state = Robot_State.EXPLORE_TURN
-
-                    g_explore_steps = 60 * g_explore_fails
-                    
+                    g_explore_steps = 60 * g_explore_fails  
             else:
                 g_berry_timer = 0
         
@@ -982,51 +934,6 @@ def main():
 
 
         prev_num_berries = len(berries)
-        
-        
-
-        
-            
-        
-            
-        
-        
-        
-        
-        # img = get_image_from_camera(camera5)
-        # img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-        # berries = get_img_obj(front_img, orange_lower_range, orange_higher_range)
-        
-        
-
-        # print("FRONT ITEMS")
-        # print(lidar.items_front[40:80])
-
-        # print_item_array_info(lidar.items_front)
-        # print("Average", sum_ignore_inf(lidar.items_right)/128)
-
-
-        # print_item_array_info(lidar.items_front[118:128])
-        # print(self.items_right[128])
-
-        # print("BACK ITEMS")
-        # print_item_array_info(lidar.items_back)
-        # print("LEFT ITEMS")
-        # print_item_array_info(lidar.items_left)
-        # print("RIGHT ITEMS")
-        # print_item_array_info(lidar.items_right)
-        
-        # Arm Extending in the direction of Kuka back(direction of camera )
-        # arm1.setPosition(0)
-        # arm2.setPosition(-1.13)
-        # arm3.setPosition(-.5)
-        # arm4.setPosition(0)
-
-        # Arm Extending Towards Kuka front
-        # arm1.setPosition(0)
-        # arm2.setPosition(1.57)
-        # arm3.setPosition(0)
-        # arm4.setPosition(0)
 
 
         #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
