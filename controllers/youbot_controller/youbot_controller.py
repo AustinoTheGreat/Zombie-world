@@ -722,7 +722,7 @@ def main():
 
         elif g_robot_state == Robot_State.AVOID_ZOMBIE_TURN:
             print("turning to avoid zombie")
-            if g_zombie_turn_angle > 175 and g_zombie_turn_angle < 185:
+            if 175 < g_zombie_turn_angle < 185:
                 g_robot_state = Robot_State.AVOID_ZOMBIE_MOVE
             else:
                 if g_zombie_turn_angle < 175:
@@ -789,7 +789,7 @@ def main():
                     g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
-                print("ERROR ON CONTINUE")
+
             # go to berry state
             print("go to berry", g_robot_state)
 
