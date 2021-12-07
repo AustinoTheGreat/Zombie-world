@@ -31,6 +31,7 @@ BERRY_GOAL_COLOR = ""
 g_robot_state = Robot_State.UNIDENTIFIED
 g_GPS = [0, 0, 0]
 g_GPS_timer = 0
+g_turn_timer = 0
 
 # Color ranges for zombies and berries, HSV
 red_lower_range = [110, 150, 0]
@@ -56,6 +57,9 @@ purple_higher_range = [180, 230, 255]
 
 aqua_lower_range = [20, 150, 0]
 aqua_higher_range = [40, 230, 255]
+
+black_lower_range = [0, 0, 0]
+black_higher_range = [255, 255, 40]
 
 
 def base_set_wheel_speed_helper(speeds = [], wheels = [], *args):
@@ -101,6 +105,8 @@ def get_img_obj(img, lower_range, higher_range, color):
 
     objs = []
     mask = cv2.inRange(img, np.array(lower_range), np.array(higher_range))
+    # if color == "black":
+        # mask = 255 - mask
     
     # Find segmented contours and their center
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -193,14 +199,13 @@ def robot_stuck(gps):
     global g_GPS_timer
     global g_GPS
     global g_robot_state
-    print(g_robot_state)
     
     g_GPS_timer = g_GPS_timer + 1
     
-    if (g_GPS_timer < 50):
+    if (g_GPS_timer < 60):
         g_robot_state = Robot_State.UNIDENTIFIED
         return False
-    elif (g_GPS_timer == 50):
+    elif (g_GPS_timer == 60):
         g_GPS_timer = 0
         cur = gps.getValues()
         diff_X = abs(g_GPS[0] - cur[0])
@@ -215,8 +220,20 @@ def robot_stuck(gps):
             g_robot_state = Robot_State.UNIDENTIFIED
             return False
             
-        
-        
+def stump_size(camera):
+    img = camera.getImageArray()
+    img = np.asarray(img, dtype=np.uint8)
+    img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+    img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+    black = get_img_obj(img, black_lower_range, black_higher_range, "black")
+    
+    # largest_contour = max(contours, key=cv2.contourArea)
+    # largest_contour_center = cv2.moments(largest_contour)
+    if (len(black) != 0):
+        if (black[0].area > 1000):
+            return True
+        else:
+            return False
             
         
         
@@ -348,6 +365,13 @@ def main():
 
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     global g_GPS_timer
+    global g_turn_timer
+    global g_robot_state
+    
+    # Berry out of sight sequence constants
+    forward_buffer_length = 0
+    berries = []
+    prev_num_berries = 0
     
     while(robot_not_dead == 1):
         
@@ -404,20 +428,58 @@ def main():
         
         # move_backward(6, wheels)
         
-        berries = go_toward_seen_berry(camera5, wheels, 5)
         
+
+        # Move forward every time a berry goes out of view(is consumed/ out of view from stump)
+        # start here
+        if(forward_buffer_length > 0):
+            print("GOING FORWARD")
+            move_backward(4, wheels)
+            forward_buffer_length-=1
+            if(forward_buffer_length == 1 and stump_size(camera5) == True):
+            
+                
+                print("start turn")
+                g_robot_state = Robot_State.SPIN
+                g_turn_timer = 40
+                
+            
+                prev_num_berries = 0
+            continue
         if (g_robot_state == Robot_State.STEPBRO and g_GPS_timer != 0):
             if g_GPS_timer > 10:
                 move_forward(5, wheels)
             else:
                 turn_left(4, wheels)
             g_GPS_timer = g_GPS_timer - 1
+        elif (g_robot_state == Robot_State.SPIN and g_turn_timer > 0):
+            print("turned")
+            turn_left(4, wheels)
+            g_turn_timer = g_turn_timer - 1
         else:
-            print("here")
+            print("go to berry")
             robot_stuck(gps)
+            berries = go_toward_seen_berry(camera5, wheels, 4)
+            if (berries == []):
+                turn_left(7, wheels)
+            else:
+                pass
         
-        if (berries == []):
-            turn_left(3, wheels)
+        # Intiiate moving forward every time a berry goes out of view(is consumed/ out of view from stump)
+        if(prev_num_berries and berries == []):# berry was captured
+            print("BERRY CAPTURED?!")
+            forward_buffer_length  += 4 #move forward for 20 timesteps
+            continue
+
+
+        prev_num_berries = len(berries)
+        
+        
+
+        
+            
+        
+            
         
         
         
@@ -446,10 +508,10 @@ def main():
         # print_item_array_info(lidar.items_right)
         
         # Arm Extending in the direction of Kuka back(direction of camera )
-        # arm1.setPosition(0)
-        # arm2.setPosition(-1.13)
-        # arm3.setPosition(-.5)
-        # arm4.setPosition(0)
+        arm1.setPosition(0)
+        arm2.setPosition(-1.13)
+        arm3.setPosition(-.60)
+        arm4.setPosition(0)
 
         # Arm Extending Towards Kuka front
         # arm1.setPosition(0)
