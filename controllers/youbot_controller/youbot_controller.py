@@ -351,7 +351,7 @@ def avoid_zombie(lidar, robot_info):
     lidar.recalculate()
     curr_frame = lidar.get_all_angles()
     g_lidar_sensor_values.append(curr_frame)
-    print("HEALTH INFO", str(robot_info[0]), "<", str(g_last_health), "- 1 or", str(g_last_health_at_check))
+    # print("HEALTH INFO", str(robot_info[0]), "<", str(g_last_health), "- 1 or", str(g_last_health_at_check))
 
     if len(g_lidar_sensor_values) >= SIG_FRAMES:
         first_frame = g_lidar_sensor_values.pop(0)
@@ -562,12 +562,14 @@ def main():
     g_zombie_moved_start_time = -1
 
     RUNAWAY_TIME = 60
+    BACKTRACK_TIME = 20 #Time to reverse away from zombie
     STOP_TIME = 1 #Time it takes the the robot to come to a complete halt
     ENERGY_MIN = 40 #When to start looking for berries
     HEALTH_MIN = 80 #When to start lloking for berries
 
     last_health = 100
     g_last_health_at_check = 100
+    currently_taking_damage = False
     #------------------CHANGE CODE ABOVE HERE ONLY--------------------------
     
     while(robot_not_dead == 1):
@@ -633,6 +635,9 @@ def main():
         # Check if we've been touched by a zombie before
         if robot_info[0] < last_health - 1 or robot_info[0] < g_last_health_at_check - 1:
             g_touched_by_zombie = True
+            currently_taking_damage = True
+        else:
+            currently_taking_damage = False
 
         last_health = robot_info[0]
         if(timer%16==0):
@@ -738,9 +743,27 @@ def main():
                 move_forward(10, wheels)
                 g_zombie_moved_start_time += 1
 
-        else:
-            if g_touched_by_zombie:
+        elif g_robot_state == Robot_State.AVOID_ZOMBIES_BACKTRACK:
+            print("Backtracking")
+            if g_zombie_moved_start_time == -1:
+                g_zombie_moved_start_time = 0
+                move_forward(10, wheels)
+            elif g_zombie_moved_start_time > BACKTRACK_TIME:
+                g_zombie_moved_start_time = -1
+                move_forward(0, wheels)
                 g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
+            else:
+                g_zombie_moved_start_time += 1
+                move_forward(10, wheels)
+
+        else:
+            if (g_touched_by_zombie and not g_berry_in_world) or (g_berry_in_world and
+                                                                  robot_info[0] > HEALTH_MIN and robot_info[1] > ENERGY_MIN):
+                if currently_taking_damage:
+
+                    g_robot_state = Robot_State.AVOID_ZOMBIES_BACKTRACK
+                else:
+                    g_robot_state = Robot_State.AVOID_ZOMBIES_BRAKING
                 clear_berry_var()
                 continue
                 print("ERROR ON CONTINUE")
